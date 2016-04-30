@@ -3,8 +3,6 @@ import exit
 
 import requests
 
-from rancher.stack import Stack
-
 
 class ServiceLink:
     rancherApiVersion = '/v1/'

@@ -1,7 +1,7 @@
 import argparse
 import os
 
-import rancher
+from rancher import servicelink, service
 
 
 def main():
@@ -42,10 +42,8 @@ def main():
               'loadBalancerSvcId': args.loadBalancerId
               }
 
-    service_links = rancher.ServiceLink(config)
-
     if service_id is None:
-        service_id = rancher.Service(config).parse_service_id(args.host)
+        service_id = service.Service(config).parse_service_id(args.host)
 
     if args.action.lower() not in ['add', 'remove']:
         parser.parse_args(['-h'])
@@ -55,9 +53,10 @@ def main():
         exit(2)
 
     if args.action.lower() == 'add':
-        service_links.add_load_balancer_target(service_id, args.host, args.externalPort, internal_port)
+        servicelink.ServiceLink(config).add_load_balancer_target(service_id, args.host, args.externalPort,
+                                                                 internal_port)
     else:
-        service_links.remove_load_balancer_target(service_id, args.host, args.externalPort)
+        servicelink.ServiceLink(config).remove_load_balancer_target(service_id, args.host, args.externalPort)
 
 
 main()
