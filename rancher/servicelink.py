@@ -1,5 +1,6 @@
 import json
 from rancher import exit
+from time import sleep
 
 import requests
 
@@ -24,7 +25,8 @@ class ServiceLink:
         for item in data:
             if 'ports' in item:
                 if item['ports'] is not None:
-                    services.append({'serviceId': item['consumedServiceId'], 'ports': item['ports']})
+                    services.append(
+                        {'serviceId': item['consumedServiceId'], 'ports': item['ports'], 'state': item['state']})
         return services
 
     def __set_load_balancer_targets(self, targets):
@@ -41,7 +43,10 @@ class ServiceLink:
     def add_load_balancer_target(self, svc_id, host, desired_port, internal_port):
         port_set = False
         targets = self.__get_load_balancer_targets()
-        for idx, target in enumerate(targets):
+        for idx, target in reversed(list(enumerate(targets))):
+            if target['state'] == 'removed':
+                del targets[idx]
+                continue
             if target['serviceId'] == str(svc_id) and 'ports' in target:
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)):
@@ -58,7 +63,10 @@ class ServiceLink:
     def remove_load_balancer_target(self, svc_id, host, desired_port):
         port_removed = False
         targets = self.__get_load_balancer_targets()
-        for idx, target in enumerate(targets):
+        for idx, target in reversed(list(enumerate(targets))):
+            if target['state'] == 'removed':
+                del targets[idx]
+                continue
             if target['serviceId'] == str(svc_id) and 'ports' in target:
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)):
@@ -68,9 +76,11 @@ class ServiceLink:
                             targets[idx] = target
                         else:
                             del targets[idx]
-                        break
-            if port_removed:
-                break
+                            # Commented break. It because rancher can create duplicate ports.
+                            # https://github.com/rancher/rancher/issues/4631
+                            # break
+                            # if port_removed:
+                            # break
         if not port_removed:
             exit.info('No such target')
         self.__set_load_balancer_targets(targets)
