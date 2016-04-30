@@ -1,5 +1,5 @@
 import json
-import exit
+from rancher import exit
 
 import requests
 

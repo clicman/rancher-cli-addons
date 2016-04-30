@@ -3,6 +3,7 @@ import json
 import requests
 
 from rancher.stack import Stack
+from rancher import exit
 
 
 class Service:
