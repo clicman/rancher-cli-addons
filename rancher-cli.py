@@ -39,9 +39,9 @@ def main():
     internal_port = var_args.pop('internalPort')
     service_id = var_args.pop('serviceId')
 
-    # if None in var_args.values():
-    #     parser.parse_args(['-h'])
-    #     exit(2)
+    if args.action is None:
+         parser.parse_args(['-h'])
+         exit(2)
 
     config = {'rancherBaseUrl': args.apiUrl,
               'rancherApiAccessKey': args.apiKey,
