@@ -154,7 +154,7 @@ class Stack:
 
     def upgrade(self, name, docker_compose_path, rancher_compose_path):
         stack_id = self.get_stack_id(name)
-        self.__init_upgrade(stack_id, docker_compose_path, rancher_compose_path)
+        self.__init_upgrade(name, docker_compose_path, rancher_compose_path)
         self.__wait_for_upgrade(stack_id)
-        self.__wait_for_healthy(stack_id)
         self.__finish_upgrade(stack_id)
+        self.__wait_for_healthy(stack_id)
