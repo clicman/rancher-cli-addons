@@ -23,7 +23,7 @@ class Service:
 
         data = json.loads(response.text)['data']
         for service in data:
-            if 'name' in service:
+            if 'name' in service and service['name'] == name:
                 return service['id']
 
         exit.err('No such service ' + name)
@@ -32,7 +32,6 @@ class Service:
         host_tokens = host_name.split('.')
         stack_name = host_tokens[1]
         service_name = host_tokens[0]
-
         stack_id = Stack(self.config).get_stack_id(stack_name)
         service_id = self.__get_service_id(stack_id, service_name)
 
