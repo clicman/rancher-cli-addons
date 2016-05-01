@@ -48,7 +48,7 @@ class ServiceLink:
             if target['serviceId'] == str(svc_id) and 'ports' in target:
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)):
-                        exit.err('This target already exists: ' + str(target))
+                        exit.info('This target already exists: ' + str(target))
                 target['ports'].append(host + ':' + str(desired_port) + '=' + str(internal_port))
                 port_set = True
                 targets[idx] = target
