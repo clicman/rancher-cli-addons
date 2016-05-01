@@ -24,6 +24,7 @@ class Stack:
         data = json.loads(response.text)['data']
         for environment in data:
             if 'name' in environment and environment['name'] == name:
+                print 'Stack id is ' + environment['id']
                 return environment['id']
 
         exit.err('No such stack ' + name)
@@ -46,6 +47,7 @@ class Stack:
             exit.err(response.text)
 
     def create(self, name, docker_compose_path, rancher_compose_path):
+        print 'Creating stack ' + name + '...'
         try:
             with open(docker_compose_path) as file_object:
                 docker_compose = file_object.read()
@@ -72,11 +74,13 @@ class Stack:
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
             if json.loads(response.text)['code'] == 'NotUnique':
+                print 'Ooops! Stack already exists. Let`s upgrade it...'
                 self.upgrade(name, docker_compose_path, rancher_compose_path)
             else:
                 exit.err(response.text)
 
     def __init_upgrade(self, name, docker_compose_path, rancher_compose_path):
+        print 'Initializing stack ' + name + ' upgrade...'
         try:
             with open(docker_compose_path) as file_object:
                 docker_compose = file_object.read()
@@ -104,6 +108,7 @@ class Stack:
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
             exit.err(response.text)
+        print 'Stack upgrade initialized'
 
     def __finish_upgrade(self, stack_id):
         payload = '{}'
@@ -116,21 +121,25 @@ class Stack:
             exit.err(response.text)
 
     def __wait_for_upgrade(self, stack_id):
+        print 'Let`s wait until stack upgraded...'
         timeout = 360
         stop_time = int(time()) + timeout
         while int(time()) <= stop_time:
             state = self.__get_state(stack_id)
             if state == 'upgraded':
+                print 'Stack ' + stack_id + ' upgraded'
                 return
             sleep(5)
         exit.err('Timeout while waiting to service upgrade. Current state is: ' + state)
 
     def __wait_for_healthy(self, stack_id):
+        print 'Let`s wait until stack become healthy...'
         timeout = 360
         stop_time = int(time()) + timeout
         while int(time()) <= stop_time:
             health_state = self.__get_health_state(stack_id)
             if health_state == 'healthy':
+                print 'Stack ' + stack_id + ' become healthy'
                 return
             sleep(5)
         exit.err('Timeout while waiting to stack become healthy. Current health state is: ' + health_state)
