@@ -17,7 +17,7 @@ class Stack:
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                 headers=self.request_headers, verify=False)
 
-        if response.status_code != 200:
+        if response.status_code not in range(200, 300):
             exit.err(response.text)
 
         data = json.loads(response.text)['data']
@@ -41,7 +41,7 @@ class Stack:
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
-        if response.status_code != 200:
+        if response.status_code not in range(200, 300):
             exit.err(response.text)
 
     def create(self, name, docker_compose_path, rancher_compose_path):
@@ -69,5 +69,5 @@ class Stack:
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
-        if response.status_code != 200:
+        if response.status_code not in range(200, 300):
             exit.err(response.text)

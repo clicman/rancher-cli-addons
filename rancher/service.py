@@ -18,7 +18,7 @@ class Service:
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                 headers=self.request_headers, verify=False)
 
-        if response.status_code != 200:
+        if response.status_code not in range(200, 300):
             exit.err(response.text)
 
         data = json.loads(response.text)['data']
