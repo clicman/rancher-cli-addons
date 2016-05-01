@@ -70,4 +70,36 @@ class Stack:
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
+            if json.loads(response.text)['code'] == 'NotUnique':
+                self.upgrade(name, docker_compose_path, rancher_compose_path)
+            else:
+                exit.err(response.text)
+
+    def upgrade(self, name, docker_compose_path, rancher_compose_path):
+        try:
+            with open(docker_compose_path) as file_object:
+                docker_compose = file_object.read()
+        except IOError, e:
+            exit.err(e.strerror + ': ' + docker_compose_path)
+
+        try:
+            with open(rancher_compose_path) as file_object:
+                rancher_compose = file_object.read()
+        except IOError, e:
+            exit.err(e.strerror + ': ' + rancher_compose_path)
+
+        stack_data = {'type': 'environment',
+                      'startOnCreate': True,
+                      'name': name,
+                      'dockerCompose': docker_compose,
+                      'rancherCompose': rancher_compose}
+        payload = util.build_payload(stack_data)
+
+        end_point = self.config[
+                        'rancherBaseUrl'] + self.rancherApiVersion + 'environments/' + self.get_stack_id(
+            name) + '/?action=upgrade'
+        response = requests.post(end_point,
+                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                 headers=self.request_headers, verify=False, data=payload)
+        if response.status_code not in range(200, 300):
             exit.err(response.text)
