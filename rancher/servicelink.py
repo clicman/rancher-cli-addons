@@ -1,7 +1,5 @@
 import json
-from rancher import exit
-from time import sleep
-
+from rancher import exit, util
 import requests
 
 
@@ -30,7 +28,7 @@ class ServiceLink:
         return services
 
     def __set_load_balancer_targets(self, targets):
-        payload = self.__build_payload(targets)
+        payload = util.build_payload({'serviceLinks': targets})
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
             'loadBalancerSvcId'] + \
                     '/?action=setservicelinks'
@@ -85,12 +83,6 @@ class ServiceLink:
             exit.info('No such target')
         self.__set_load_balancer_targets(targets)
         self.__update_load_balancer_service()
-
-    @staticmethod
-    def __build_payload(targets):
-        targets = {'serviceLinks': targets}
-        payload = json.dumps(targets)
-        return payload
 
     def __update_load_balancer_service(self):
         payload = '{}'

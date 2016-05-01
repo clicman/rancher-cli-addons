@@ -1,7 +1,7 @@
 import json
-from rancher import exit
-
+from rancher import exit, util
 import requests
+import yaml
 
 
 class Stack:
@@ -38,6 +38,34 @@ class Stack:
 
         end_point = self.config[
                         'rancherBaseUrl'] + self.rancherApiVersion + 'environments/' + stack_id + '/?action=remove'
+        response = requests.post(end_point,
+                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                 headers=self.request_headers, verify=False, data=payload)
+        if response.status_code != 200:
+            exit.err(response.text)
+
+    def create(self, name, docker_compose_path, rancher_compose_path):
+        try:
+            with open(docker_compose_path) as file_object:
+                docker_compose = file_object.read()
+        except IOError, e:
+            exit.err(e.strerror + ': ' + docker_compose_path)
+
+        try:
+            with open(rancher_compose_path) as file_object:
+                rancher_compose = file_object.read()
+        except IOError, e:
+            exit.err(e.strerror + ': ' + rancher_compose_path)
+
+        stack_data = {'type': 'environment',
+                      'startOnCreate': True,
+                      'name': name,
+                      'dockerCompose': docker_compose,
+                      'rancherCompose': rancher_compose}
+        payload = util.build_payload(stack_data)
+
+        end_point = self.config[
+                        'rancherBaseUrl'] + self.rancherApiVersion + 'environment'
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
