@@ -3,7 +3,6 @@ import json
 import os
 import requests
 
-import yaml
 import argparse
 
 base_url = 'https://pddimp.yandex.ru/api2/admin'
