@@ -78,6 +78,10 @@ class Stack:
                 self.upgrade(name, docker_compose_path, rancher_compose_path)
             else:
                 exit.err(response.text)
+        stack_id = self.get_stack_id(name)
+        self.__wait_for_active(stack_id)
+        self.__wait_for_healthy()
+        print 'Stack ' + name + ' created'
 
     def __init_upgrade(self, name, docker_compose_path, rancher_compose_path):
         print 'Initializing stack ' + name + ' upgrade...'
@@ -128,6 +132,18 @@ class Stack:
             state = self.__get_state(stack_id)
             if state == 'upgraded':
                 print 'Stack ' + stack_id + ' upgraded'
+                return
+            sleep(5)
+        exit.err('Timeout while waiting to service upgrade. Current state is: ' + state)
+
+    def __wait_for_active(self, stack_id):
+        print 'Let`s wait until stack become active...'
+        timeout = 360
+        stop_time = int(time()) + timeout
+        while int(time()) <= stop_time:
+            state = self.__get_state(stack_id)
+            if state == 'active':
+                print 'Stack ' + stack_id + ' active'
                 return
             sleep(5)
         exit.err('Timeout while waiting to service upgrade. Current state is: ' + state)
