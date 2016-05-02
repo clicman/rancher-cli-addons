@@ -80,7 +80,7 @@ class Stack:
                 exit.err(response.text)
         stack_id = self.get_stack_id(name)
         self.__wait_for_active(stack_id)
-        self.__wait_for_healthy()
+        self.__wait_for_healthy(stack_id)
         print 'Stack ' + name + ' created'
 
     def __init_upgrade(self, name, docker_compose_path, rancher_compose_path):
