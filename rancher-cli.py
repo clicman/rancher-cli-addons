@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import json
 import os
 
 from rancher import servicelink, service, stack
@@ -23,6 +24,8 @@ def main():
                         help='docker compose path')
     parser.add_argument('--rancherCompose',
                         help='Rancher compose path')
+    parser.add_argument('--stackEnvironment', default='{}',
+                        help='Stack environment variables json')
     # Action params
     required_named = parser.add_argument_group('required arguments')
     required_named.add_argument('--action', help='add-link,  remove-lnk, create-stack, remove-stack')
@@ -40,8 +43,8 @@ def main():
     service_id = var_args.pop('serviceId')
 
     if args.action is None:
-         parser.parse_args(['-h'])
-         exit(2)
+        parser.parse_args(['-h'])
+        exit(2)
 
     config = {'rancherBaseUrl': args.apiUrl,
               'rancherApiAccessKey': args.apiKey,
@@ -66,7 +69,8 @@ def main():
         servicelink.ServiceLink(config).remove_load_balancer_target(service_id, args.host, args.externalPort)
 
     elif args.action.lower() == 'create-stack':
-        stack.Stack(config).create(args.stackName, args.dockerCompose, args.rancherCompose)
+        stack_environment = json.loads(args.stackEnvironment)
+        stack.Stack(config).create(args.stackName, args.dockerCompose, args.rancherCompose, stack_environment)
 
     elif args.action.lower() == 'remove-stack':
         stack.Stack(config).remove('name', args.stackName)

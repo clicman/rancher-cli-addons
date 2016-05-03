@@ -46,7 +46,7 @@ class Stack:
         if response.status_code not in range(200, 300):
             exit.err(response.text)
 
-    def create(self, name, docker_compose_path, rancher_compose_path):
+    def create(self, name, docker_compose_path, rancher_compose_path, environment={}):
         print 'Creating stack ' + name + '...'
         try:
             with open(docker_compose_path) as file_object:
@@ -63,6 +63,7 @@ class Stack:
         stack_data = {'type': 'environment',
                       'startOnCreate': True,
                       'name': name,
+                      'environment': environment,
                       'dockerCompose': docker_compose,
                       'rancherCompose': rancher_compose}
         payload = util.build_payload(stack_data)
