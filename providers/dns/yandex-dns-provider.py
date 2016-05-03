@@ -7,7 +7,7 @@ import argparse
 
 base_url = 'https://pddimp.yandex.ru/api2/admin'
 
-parser = argparse.ArgumentParser(description='Domain manager for http://pdd.yandex.ru service')
+parser = argparse.ArgumentParser(description='Dns provider for http://pdd.yandex.ru service')
 parser.add_argument('action', help='add or remove')
 parser.add_argument('domain', help='domain to add')
 parser.add_argument('--ip', help='Domain ip')
