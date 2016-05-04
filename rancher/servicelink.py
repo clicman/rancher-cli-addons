@@ -120,8 +120,8 @@ class ServiceLink:
         for target in targets:
             if 'ports' in target:
                 for port in target['ports']:
-                    if re.compile("^\d+:\d+$").match(port) is not None:
-                        port_list.remove(port.split(':')[0])
+                    if re.compile("^\d+=\d+$").match(port) is not None:
+                        port_list.remove(port.split('=')[0])
         if len(port_list) > 0:
             return port_list[0]
         print 'There is no available ports'
