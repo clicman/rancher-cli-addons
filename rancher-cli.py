@@ -28,7 +28,8 @@ def main():
                         help='Stack environment variables json')
     # Action params
     required_named = parser.add_argument_group('required arguments')
-    required_named.add_argument('--action', help='add-link,  remove-lnk, create-stack, remove-stack, get-port')
+    required_named.add_argument('--action',
+                                help='add-link,  remove-lnk, create-stack, remove-stack, get-port, get-service-port')
     parser.add_argument('--serviceId',
                         help="""target service id. Optional, parsed from hostname if not
                         set by pattern: serviceName.stackName.somedomain.TLD""")
@@ -55,7 +56,8 @@ def main():
     if service_id is None and args.host is not None:
         service_id = service.Service(config).parse_service_id(args.host)
 
-    if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port']:
+    if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port',
+                                   'get-service-port']:
         parser.parse_args(['-h'])
         exit(2)
     if args.action.lower() == 'add' and internal_port is None:
@@ -64,6 +66,9 @@ def main():
 
     if args.action.lower() == 'get-port':
         print servicelink.ServiceLink(config).get_available_port()
+
+    elif args.action.lower() == 'get-service-port':
+        print servicelink.ServiceLink(config).get_service_port(service_id)
 
     elif args.action.lower() == 'add-link':
         servicelink.ServiceLink(config).add_load_balancer_target(service_id, args.host, args.externalPort,

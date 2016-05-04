@@ -24,7 +24,6 @@ class Stack:
         data = json.loads(response.text)['data']
         for environment in data:
             if 'name' in environment and environment['name'] == name:
-                print 'Stack id is ' + environment['id']
                 return environment['id']
 
         exit.err('No such stack ' + name)

@@ -2,7 +2,7 @@ import json
 
 import re
 
-from rancher import exit, util
+from rancher import exit, util, service
 import requests
 
 
@@ -141,3 +141,14 @@ class ServiceLink:
             return port_list[0]
         print 'There is no available ports'
         exit(2)
+
+    def get_service_port(self, service_id):
+        targets = self.__get_load_balancer_targets()
+        for target in targets:
+            if target['serviceId'] == str(service_id) and 'ports' in target:
+                port = target['ports'][0]
+                if ':' in port:
+                    return port.split(':')[1].split('=')[0]
+                else:
+                    return port.split('=')[0]
+        return -1
