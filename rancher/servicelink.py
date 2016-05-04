@@ -1,4 +1,7 @@
 import json
+
+import re
+
 from rancher import exit, util
 import requests
 
@@ -26,6 +29,18 @@ class ServiceLink:
                     services.append(
                         {'serviceId': item['consumedServiceId'], 'ports': item['ports'], 'state': item['state']})
         return services
+
+    def __get_load_balancer_ports(self):
+        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
+            'loadBalancerSvcId']
+        response = requests.get(end_point,
+                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                headers=self.request_headers, verify=False)
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+
+        data = json.loads(response.text)
+        return data['launchConfig']['ports']
 
     def __set_load_balancer_targets(self, targets):
         payload = util.build_payload({'serviceLinks': targets})
@@ -94,3 +109,20 @@ class ServiceLink:
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
             exit.err(response.text)
+
+    def get_available_port(self):
+        ports = self.__get_load_balancer_ports()
+        port_list = []
+        for port in ports:
+            if '/tcp' in port:
+                port_list.append(port.split(':')[0])
+        targets = self.__get_load_balancer_targets()
+        for target in targets:
+            if 'ports' in target:
+                for port in target['ports']:
+                    if re.compile("^\d+:\d+$").match(port) is not None:
+                        port_list.remove(port.split(':')[0])
+        if len(port_list) > 0:
+            return port_list[0]
+        print 'There is no available ports'
+        exit(2)
