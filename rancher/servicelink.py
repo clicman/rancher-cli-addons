@@ -56,6 +56,8 @@ class ServiceLink:
     def add_load_balancer_target(self, svc_id, host, desired_port, internal_port):
         port_set = False
         targets = self.__get_load_balancer_targets()
+        tcp_ports = self.__get_load_balancer_ports()
+
         for idx, target in reversed(list(enumerate(targets))):
             if target['state'] == 'removed':
                 del targets[idx]
@@ -66,12 +68,21 @@ class ServiceLink:
                             or (port.endswith('=' + str(internal_port)) and re.compile("^\d+=\d+$").match(
                                 port) is not None):
                         exit.info('This target already exists: ' + str(target))
-                target['ports'].append(host + ':' + str(desired_port) + '=' + str(internal_port))
+
+                if str(desired_port) + ':' + str(desired_port) + '/tcp' in tcp_ports:
+                    target['ports'].append(str(desired_port) + '=' + str(internal_port))
+                else:
+                    target['ports'].append(host + ':' + str(desired_port) + '=' + str(internal_port))
+
                 port_set = True
                 targets[idx] = target
         if not port_set:
-            targets.append(
-                {'serviceId': str(svc_id), 'ports': [host + ':' + str(desired_port) + '=' + str(internal_port)]})
+            if str(desired_port) + ':' + str(desired_port) + '/tcp' in tcp_ports:
+                targets.append(
+                    {'serviceId': str(svc_id), 'ports': [str(desired_port) + '=' + str(internal_port)]})
+            else:
+                targets.append(
+                    {'serviceId': str(svc_id), 'ports': [host + ':' + str(desired_port) + '=' + str(internal_port)]})
         self.__set_load_balancer_targets(targets)
         self.__update_load_balancer_service()
 
