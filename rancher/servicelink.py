@@ -85,7 +85,7 @@ class ServiceLink:
             if target['serviceId'] == str(svc_id) and 'ports' in target:
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)) \
-                            or (port.endswith(str(desired_port) + '=') and re.compile("^\d+=\d+$").match(
+                            or (port.startswith(str(desired_port) + '=') and re.compile("^\d+=\d+$").match(
                                 port) is not None):
                         target['ports'].remove(port)
                         port_removed = True
