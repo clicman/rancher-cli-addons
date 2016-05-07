@@ -14,6 +14,11 @@ class ServiceLink:
         self.config = configuration
 
     def __get_load_balancer_targets(self):
+        services = self.get_load_balancer_services()
+        service_ids = []
+        for svc in services:
+            service_ids.append(svc['id'])
+
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'serviceconsumemaps?limit=-1'
         response = requests.get(end_point,
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
@@ -24,7 +29,7 @@ class ServiceLink:
         data = json.loads(response.text)['data']
         services = []
         for item in data:
-            if 'ports' in item:
+            if item['consumedServiceId'] in service_ids and 'ports' in item:
                 if item['ports'] is not None:
                     services.append(
                         {'serviceId': item['consumedServiceId'], 'ports': item['ports'], 'state': item['state']})
@@ -139,8 +144,7 @@ class ServiceLink:
                         port_list.remove(port.split('=')[0])
         if len(port_list) > 0:
             return port_list[0]
-        print 'There is no available ports'
-        exit(2)
+        exit.err('There is no available ports')
 
     def get_service_port(self, service_id):
         targets = self.__get_load_balancer_targets()
@@ -152,3 +156,15 @@ class ServiceLink:
                 else:
                     return port.split('=')[0]
         return -1
+
+    def get_load_balancer_services(self):
+        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
+            'loadBalancerSvcId'] + '/consumedservices'
+        response = requests.get(end_point,
+                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                headers=self.request_headers, verify=False)
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+
+        data = json.loads(response.text)
+        return data['data']
