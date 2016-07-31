@@ -28,30 +28,36 @@ RANCHER_LB_TCP_IP=10.10.10.12 # TCP LB ip
 ```
 
 Examples:
+
+####Create stack. If stack already exists it will upgraded.
 ```
-#Create stack. If stack already exists it will upgraded.
 ./rancher-cli.py --action=create-stack --stackName=${STACK_NAME} \
 --dockerCompose=docker-compose.yml --rancherCompose=rancher-compose.yml
+```
 
-#Add load balancer target, so service will be available via http
-#${HTTP_SERVICE_NAME} - is a service name from dockder-compose.yml
-#${STACK_NAME} - stack name
-#${MY_DOMAIN} - domain where it will registered
-#NOTE! host must always be builded as ${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}!!!
-./rancher-cli.py --action=add-link --externalPort=80 --host=${HTTP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN} \
---internalPort=8080
+####Add load balancer target, so service will be available via http
+* ```${HTTP_SERVICE_NAME}``` - is a service name from dockder-compose.yml
+* ```${STACK_NAME}``` - stack name
+* ```${MY_DOMAIN}``` - domain where it will registered
+* **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```!!!
+```
+./rancher-cli.py --action=add-link --externalPort=80 \
+--host=${HTTP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN} --internalPort=8080
+```
 
-#If you want to add tcp service link which will be externally accesible you should set '--externalPort' 
-#parameter (and it should be registered on load balancer as tcp port
-#${HTTP_SERVICE_NAME} - is a service name from dockder-compose.yml
-#${STACK_NAME} - stack name
-#${MY_DOMAIN} - domain where it will registered
-#NOTE! host must always be builded as ${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}!!!
+####If you want to add tcp service link which will be externally accesible you should set ```--externalPort``` parameter (and it should be registered on load balancer as tcp port)
+* ```${HTTP_SERVICE_NAME}``` - is a service name from dockder-compose.yml
+* ```${STACK_NAME}``` - stack name
+* ```${MY_DOMAIN}``` - domain where it will registered
+* **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```
+```
 ./rancher-cli.py --action=add-link --externalPort=`./rancher-cli.py --action=get-port \
 --loadBalancerId=${RANCHER_LB_TCP_ID}` --host=${TCP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}
 --internalPort=${DB_MONGO_PORT} --loadBalancerId=${RANCHER_LB_TCP_ID}
+```
 
-#Remove stack
+####Remove stack
+```
 rancher-cli.py --action=remove-stack --stackName=${STACK_NAME}
 ```
 
@@ -64,8 +70,14 @@ PDD_TOKEN= #pdd.yandex.ru api token
 ```
 
 Examples:
+
+####Add domain
 ```
 ./yandex-domain-manager.py add full.domain.name --ip=10.10.10.12 --ttl=360 #ttl is optional, default value is 360
+```
+
+####Remove domain
+```
 ./yandex-domain-manager.py remove full.domain.name
 ```
 
