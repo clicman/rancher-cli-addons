@@ -4,7 +4,7 @@ In reaction to [rancher #4570](https://github.com/rancher/rancher/issues/4570)
 ##Features
 * Create/Upgrade/Remove stack
 * Add/Remove load balancer's service links
-* Add/Remove domains at [Yandex DNS service](https://pdd.yandex.ru)
+* Add/Remove domains at [Yandex DNS service](https://pdd.yandex.com)
 
 ##Requirements:
 * Python>=2.7
@@ -62,7 +62,7 @@ rancher-cli.py --action=remove-stack --stackName=${STACK_NAME}
 ```
 
 ###yandex-domain-manager
-* Add/Remove domains at [Yandex DNS service](https://pdd.yandex.ru)
+* Add/Remove domains at [Yandex DNS service](https://pdd.yandex.com)
 
 Possible environment variables (Optional, also can be set as command line arguments):
 ```
