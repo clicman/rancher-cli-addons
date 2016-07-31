@@ -30,6 +30,7 @@ class Stack:
 
     def remove(self, value_type, value):
         payload = '{}'
+        stack_id = None
         if value_type == 'name':
             stack_id = self.get_stack_id(value)
         elif value_type == 'id':
@@ -45,19 +46,23 @@ class Stack:
         if response.status_code not in range(200, 300):
             exit.err(response.text)
 
-    def create(self, name, docker_compose_path, rancher_compose_path, environment={}):
+    def create(self, name, docker_compose_path, rancher_compose_path, environment=None):
+        if environment is None:
+            environment = {}
+        docker_compose = None
+        rancher_compose = None
         print 'Creating stack ' + name + '...'
         try:
             with open(docker_compose_path) as file_object:
                 docker_compose = file_object.read()
         except IOError, e:
-            exit.err(e.strerror + ': ' + docker_compose_path)
+            exit.err(e.message + ': ' + docker_compose_path)
 
         try:
             with open(rancher_compose_path) as file_object:
                 rancher_compose = file_object.read()
         except IOError, e:
-            exit.err(e.strerror + ': ' + rancher_compose_path)
+            exit.err(e.message + ': ' + rancher_compose_path)
 
         stack_data = {'type': 'environment',
                       'startOnCreate': True,
@@ -74,7 +79,7 @@ class Stack:
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
             if json.loads(response.text)['code'] == 'NotUnique':
-                print 'Ooops! Stack already exists. Let`s upgrade it...'
+                print 'Oops! Stack already exists. Let`s upgrade it...'
                 self.upgrade(name, docker_compose_path, rancher_compose_path)
             else:
                 exit.err(response.text)
@@ -84,18 +89,20 @@ class Stack:
         print 'Stack ' + name + ' created'
 
     def __init_upgrade(self, name, docker_compose_path, rancher_compose_path):
+        docker_compose = None
+        rancher_compose = None
         print 'Initializing stack ' + name + ' upgrade...'
         try:
             with open(docker_compose_path) as file_object:
                 docker_compose = file_object.read()
         except IOError, e:
-            exit.err(e.strerror + ': ' + docker_compose_path)
+            exit.err(e.message + ': ' + docker_compose_path)
 
         try:
             with open(rancher_compose_path) as file_object:
                 rancher_compose = file_object.read()
         except IOError, e:
-            exit.err(e.strerror + ': ' + rancher_compose_path)
+            exit.err(e.message + ': ' + rancher_compose_path)
 
         stack_data = {'type': 'environment',
                       'startOnCreate': True,
@@ -116,8 +123,8 @@ class Stack:
 
     def __finish_upgrade(self, stack_id):
         payload = '{}'
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'environments/' + stack_id + \
-                    '/?action=finishupgrade'
+        end_point = '{}{}environments/{}/?action=finishupgrade'.format(
+            self.config['rancherBaseUrl'], self.rancherApiVersion, stack_id)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
@@ -126,8 +133,9 @@ class Stack:
 
     def __wait_for_upgrade(self, stack_id):
         print 'Let`s wait until stack upgraded...'
-        timeout = 360
+        timeout = self.config.stackUpgradeTimeout
         stop_time = int(time()) + timeout
+        state = None
         while int(time()) <= stop_time:
             state = self.__get_state(stack_id)
             if state == 'upgraded':
@@ -138,8 +146,9 @@ class Stack:
 
     def __wait_for_active(self, stack_id):
         print 'Let`s wait until stack become active...'
-        timeout = 360
+        timeout = self.config.stackActiveTimeout
         stop_time = int(time()) + timeout
+        state = None
         while int(time()) <= stop_time:
             state = self.__get_state(stack_id)
             if state == 'active':
@@ -150,8 +159,9 @@ class Stack:
 
     def __wait_for_healthy(self, stack_id):
         print 'Let`s wait until stack become healthy...'
-        timeout = 360
+        timeout = self.config.stackHealthyTimeout
         stop_time = int(time()) + timeout
+        health_state = None
         while int(time()) <= stop_time:
             health_state = self.__get_health_state(stack_id)
             if health_state == 'healthy':

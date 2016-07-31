@@ -9,7 +9,7 @@ base_url = 'https://pddimp.yandex.ru/api2/admin'
 
 parser = argparse.ArgumentParser(description='Domain manager for http://pdd.yandex.ru service')
 parser.add_argument('action', help='add or remove')
-parser.add_argument('domain', help='domain to add')
+parser.add_argument('domain', help='domain name')
 parser.add_argument('--ip', help='Domain ip')
 parser.add_argument('--ttl', default=360, help='Ttl dor domain. default is 360 seconds')
 parser.add_argument('--token', default=os.environ.get('PDD_TOKEN'),
@@ -19,9 +19,10 @@ request_headers = {}
 
 
 def main():
+    args = []
     try:
         args = parser.parse_args()
-    except:
+    except SystemExit:
         parser.parse_args(['-h'])
         exit(1)
 
@@ -52,8 +53,8 @@ def add(domain_name, subdomain_name, ttl, ip):
                              headers=request_headers, params=params)
 
     if response.status_code not in range(200, 300) or (
-                    json.loads(response.text)['success'] == 'error' and json.loads(response.text)[
-                'error'] != 'record_exists'):
+                    json.loads(response.text)['success'] == 'error' and
+                    json.loads(response.text)['error'] != 'record_exists'):
         print 'Failed to add domain: ' + response.text
         exit(2)
 
@@ -69,8 +70,8 @@ def remove(domain_name, fqdn):
                              headers=request_headers, params=params)
 
     if response.status_code not in range(200, 300) or (
-                    json.loads(response.text)['success'] == 'error' and json.loads(response.text)[
-                'error'] != 'no_such_record'):
+                    json.loads(response.text)['success'] == 'error' and
+                    json.loads(response.text)['error'] != 'no_such_record'):
         print 'Failed to remove domain: ' + response.text
         exit(2)
 

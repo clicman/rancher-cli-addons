@@ -2,7 +2,7 @@ import json
 
 import re
 
-from rancher import exit, util, service
+from rancher import exit, util
 import requests
 
 
@@ -49,9 +49,8 @@ class ServiceLink:
 
     def __set_load_balancer_targets(self, targets):
         payload = util.build_payload({'serviceLinks': targets})
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
-            'loadBalancerSvcId'] + \
-                    '/?action=setservicelinks'
+        end_point = '{}{}loadbalancerservices/{}/?action=setservicelinks'.format(
+            self.config['rancherBaseUrl'], self.rancherApiVersion, self.config['loadBalancerSvcId'])
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
@@ -121,9 +120,8 @@ class ServiceLink:
 
     def __update_load_balancer_service(self):
         payload = '{}'
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
-            'loadBalancerSvcId'] + \
-                    '/?action=update'
+        end_point = '{}{}loadbalancerservices/{}/?action=update'.format(
+            self.config['rancherBaseUrl'], self.rancherApiVersion, self.config['loadBalancerSvcId'])
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
@@ -139,6 +137,7 @@ class ServiceLink:
         targets = self.__get_load_balancer_targets()
         for target in targets:
             if 'ports' in target:
+                # noinspection PyTypeChecker
                 for port in target['ports']:
                     if re.compile("^\d+=\d+$").match(port) is not None:
                         port_list.remove(port.split('=')[0])
@@ -149,7 +148,9 @@ class ServiceLink:
     def get_service_port(self, service_id):
         targets = self.__get_load_balancer_targets()
         for target in targets:
+            # noinspection PyTypeChecker
             if target['serviceId'] == str(service_id) and 'ports' in target:
+                # noinspection PyTypeChecker
                 port = target['ports'][0]
                 if ':' in port:
                     return port.split(':')[1].split('=')[0]

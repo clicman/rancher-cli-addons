@@ -10,14 +10,14 @@ parser.add_argument('value', help='property value')
 
 try:
     parser.parse_args()
-except:
+except SystemExit:
     parser.parse_args(['-h'])
 
 
 def parse(yml_file):
-    with open(yml_file, 'r') as stream:
+    with open(yml_file, 'r') as data:
         try:
-            return yaml.load(stream)
+            return yaml.load(data)
         except yaml.YAMLError as exc:
             print(exc)
             exit(2)

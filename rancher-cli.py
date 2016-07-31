@@ -18,8 +18,17 @@ def main():
                         help='api secret, $RANCHER_API_SECRET environment variable can be used')
     parser.add_argument('--loadBalancerId', default=os.environ.get('RANCHER_LB_ID'),
                         help='load balancer service id, $RANCHER_LB_ID environment variable can be used')
+
     parser.add_argument('--stackName',
                         help='Stack name')
+
+    parser.add_argument('--stackUpgradeTimeout', default=os.environ.getenv('STACK_UPGRADE_TIMEOUT', 360),
+                        help='timeout for stack upgrade in seconds. Default 360')
+    parser.add_argument('--stackActiveTimeout', default=os.environ.getenv('STACK_ACTIVE_TIMEOUT', 360),
+                        help='timeout for stack become active in seconds. Default 360')
+    parser.add_argument('--stackHealthyTimeout', default=os.environ.getenv('STACK_HEALTHY_TIMEOUT', 360),
+                        help='timeout for stack become healthy in seconds. Default 360')
+
     parser.add_argument('--dockerCompose',
                         help='docker compose path')
     parser.add_argument('--rancherCompose',
@@ -50,7 +59,10 @@ def main():
     config = {'rancherBaseUrl': args.apiUrl,
               'rancherApiAccessKey': args.apiKey,
               'rancherApiSecretKey': args.apiSecret,
-              'loadBalancerSvcId': args.loadBalancerId
+              'loadBalancerSvcId': args.loadBalancerId,
+              'stackUpgradeTimeout': args.stackUpgradeTimeout,
+              'stackActiveTimeout': args.stackActiveTimeout,
+              'stackHealthyTimeout': args.stackHealthyTimeout
               }
 
     if service_id is None and args.host is not None:

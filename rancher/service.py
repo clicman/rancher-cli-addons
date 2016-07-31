@@ -46,8 +46,8 @@ class Service:
 
     def __init_upgrade(self, service_id):
         payload = '{}'
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'services/' + service_id + \
-                    '/?action=upgrade'
+        end_point = '{}{}services/{}/?action=upgrade'.format(
+            self.config['rancherBaseUrl'], self.rancherApiVersion, service_id)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
@@ -56,8 +56,8 @@ class Service:
 
     def __finish_upgrade(self, service_id):
         payload = '{}'
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'services/' + service_id + \
-                    '/?action=finishupgrade'
+        end_point = '{}{}services/{}/?action=finishupgrade'.format(
+            self.config['rancherBaseUrl'], self.rancherApiVersion, service_id)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
@@ -67,6 +67,7 @@ class Service:
     def __wait_for_upgrade(self, service_id):
         timeout = 360
         stop_time = int(time()) + timeout
+        state = None
         while int(time()) <= stop_time:
             state = self.__get_state(service_id)
             if state == 'upgraded':
@@ -77,6 +78,7 @@ class Service:
     def __wait_for_healthy(self, service_id):
         timeout = 360
         stop_time = int(time()) + timeout
+        health_state = None
         while int(time()) <= stop_time:
             health_state = self.__get_health_state(service_id)
             if health_state == 'healthy':
