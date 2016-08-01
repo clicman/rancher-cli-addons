@@ -44,25 +44,14 @@ class Stack:
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            exit.err('Could not remove stack: {}'.format(response.text))
 
     def create(self, name, docker_compose_path, rancher_compose_path, environment=None):
         if environment is None:
             environment = {}
-        docker_compose = None
-        rancher_compose = None
         print 'Creating stack ' + name + '...'
-        try:
-            with open(docker_compose_path) as file_object:
-                docker_compose = file_object.read()
-        except IOError, e:
-            exit.err(e.message + ': ' + docker_compose_path)
-
-        try:
-            with open(rancher_compose_path) as file_object:
-                rancher_compose = file_object.read()
-        except IOError, e:
-            exit.err(e.message + ': ' + rancher_compose_path)
+        docker_compose = self.__get_docker_compose(docker_compose_path)
+        rancher_compose = self.__get_rancher_compose(rancher_compose_path)
 
         stack_data = {'type': 'environment',
                       'startOnCreate': True,
@@ -88,20 +77,9 @@ class Stack:
         print 'Stack ' + name + ' created'
 
     def __init_upgrade(self, name, docker_compose_path, rancher_compose_path):
-        docker_compose = None
-        rancher_compose = None
         print 'Initializing stack ' + name + ' upgrade...'
-        try:
-            with open(docker_compose_path) as file_object:
-                docker_compose = file_object.read()
-        except IOError, e:
-            exit.err(e.message + ': ' + docker_compose_path)
-
-        try:
-            with open(rancher_compose_path) as file_object:
-                rancher_compose = file_object.read()
-        except IOError, e:
-            exit.err(e.message + ': ' + rancher_compose_path)
+        docker_compose = self.__get_docker_compose(docker_compose_path)
+        rancher_compose = self.__get_rancher_compose(rancher_compose_path)
 
         stack_data = {'type': 'environment',
                       'startOnCreate': True,
@@ -164,7 +142,7 @@ class Stack:
         while int(time()) <= stop_time:
             health_state = self.__get_health_state(stack_id)
             if health_state == 'healthy':
-                print 'Stack ' + stack_id + ' become healthy'
+                print 'Stack ' + stack_id + ' is now healthy'
                 return
             sleep(5)
         exit.err('Timeout while waiting to stack become healthy. Current health state is: ' + health_state)
@@ -185,6 +163,25 @@ class Stack:
     def __get_health_state(self, stack_id):
         service = self.__get(stack_id)
         return service['healthState']
+
+    @staticmethod
+    def __get_docker_compose(docker_compose_path):
+        try:
+            with open(docker_compose_path) as file_object:
+                return file_object.read()
+        except IOError, e:
+            exit.err('Could not open docker-compose file: {}\n{}'.format(docker_compose_path, e.message))
+
+    @staticmethod
+    def __get_rancher_compose(rancher_compose_path):
+        if rancher_compose_path is None:
+            return ''
+        else:
+            try:
+                with open(rancher_compose_path) as file_object:
+                    return file_object.read()
+            except IOError, e:
+                exit.err('Could not open rancher-compose file: {}\n{}'.format(rancher_compose_path, e.message))
 
     def upgrade(self, name, docker_compose_path, rancher_compose_path):
         stack_id = self.get_stack_id(name)

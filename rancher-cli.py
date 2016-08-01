@@ -32,7 +32,7 @@ def main():
     parser.add_argument('--dockerCompose',
                         help='docker compose path')
     parser.add_argument('--rancherCompose',
-                        help='Rancher compose path')
+                        help='Rancher compose path (optional)', default=None)
     parser.add_argument('--stackEnvironment', default='{}',
                         help='Stack environment variables json')
     # Action params
