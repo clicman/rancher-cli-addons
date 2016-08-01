@@ -99,6 +99,7 @@ yaml-modifier.py docker-compose.yml site.environment.API_URL "http://api.${SERVI
 ##TODO
 * Move domain manager to providers
 * Create debian package
+* Add service scaling feature
 
 
 ##License
