@@ -17,7 +17,7 @@ In reaction to [rancher #4570](https://github.com/rancher/rancher/issues/4570)
 * Add/Remove load balancer's service links
 
 Possible environment variables (Optional, also can be set as command line arguments):
-```
+```bash
 RANCHER_API_URL='https://rancher.yourdomain.com'
 RANCHER_API_KEY=228E5F4B58373A000F30
 RANCHER_API_SECRET=LN3NNrPG28Deb954d4BusosAASsmDHoFMkbiT8Vd
@@ -30,7 +30,7 @@ RANCHER_LB_TCP_IP=10.10.10.12 # TCP LB ip
 Examples:
 
 ####Create stack. If stack already exists it will upgraded.
-```
+```bash
 ./rancher-cli.py --action=create-stack --stackName=${STACK_NAME} \
 --dockerCompose=docker-compose.yml --rancherCompose=rancher-compose.yml
 ```
@@ -40,7 +40,7 @@ Examples:
 * ```${STACK_NAME}``` - stack name
 * ```${MY_DOMAIN}``` - domain where it will registered
 * **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```!!!
-```
+```bash
 ./rancher-cli.py --action=add-link --externalPort=80 \
 --host=${HTTP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN} --internalPort=8080
 ```
@@ -50,14 +50,14 @@ Examples:
 * ```${STACK_NAME}``` - stack name
 * ```${MY_DOMAIN}``` - domain where it will registered
 * **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```
-```
+```bash
 ./rancher-cli.py --action=add-link --externalPort=`./rancher-cli.py --action=get-port \
 --loadBalancerId=${RANCHER_LB_TCP_ID}` --host=${TCP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}
 --internalPort=${DB_MONGO_PORT} --loadBalancerId=${RANCHER_LB_TCP_ID}
 ```
 
 ####Remove stack
-```
+```bash
 rancher-cli.py --action=remove-stack --stackName=${STACK_NAME}
 ```
 
@@ -65,19 +65,19 @@ rancher-cli.py --action=remove-stack --stackName=${STACK_NAME}
 * Add/Remove domains at [Yandex DNS service](https://pdd.yandex.com)
 
 Possible environment variables (Optional, also can be set as command line arguments):
-```
+```bash
 PDD_TOKEN= #pdd.yandex.ru api token
 ```
 
 Examples:
 
 ####Add domain
-```
+```bash
 ./yandex-domain-manager.py add full.domain.name --ip=10.10.10.12 --ttl=360 #ttl is optional, default value is 360
 ```
 
 ####Remove domain
-```
+```bash
 ./yandex-domain-manager.py remove full.domain.name
 ```
 
@@ -86,7 +86,7 @@ Examples:
 * Handy utility to modify docker-compose/rancher-compose or other YAML files on fly
 
 Examples:
-```
+```bash
 yaml-modifier.py docker-compose.yml ${MAIN_SERVICE_NAME}.environment.COMMIT_HASH ${sourceCommitHash}
 yaml-modifier.py docker-compose.yml api.environment.DB_POSTGRES_HOST ${DB_POSTGRES_HOST}
 yaml-modifier.py docker-compose.yml api.environment.DB_POSTGRES_PORT ${DB_POSTGRES_PORT}
