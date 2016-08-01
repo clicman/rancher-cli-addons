@@ -22,11 +22,11 @@ def main():
     parser.add_argument('--stackName',
                         help='Stack name')
 
-    parser.add_argument('--stackUpgradeTimeout', default=os.environ.getenv('STACK_UPGRADE_TIMEOUT', 360),
+    parser.add_argument('--stackUpgradeTimeout', default=os.environ.get('STACK_UPGRADE_TIMEOUT', 360),
                         help='timeout for stack upgrade in seconds. Default 360')
-    parser.add_argument('--stackActiveTimeout', default=os.environ.getenv('STACK_ACTIVE_TIMEOUT', 360),
+    parser.add_argument('--stackActiveTimeout', default=os.environ.get('STACK_ACTIVE_TIMEOUT', 360),
                         help='timeout for stack become active in seconds. Default 360')
-    parser.add_argument('--stackHealthyTimeout', default=os.environ.getenv('STACK_HEALTHY_TIMEOUT', 360),
+    parser.add_argument('--stackHealthyTimeout', default=os.environ.get('STACK_HEALTHY_TIMEOUT', 360),
                         help='timeout for stack become healthy in seconds. Default 360')
 
     parser.add_argument('--dockerCompose',

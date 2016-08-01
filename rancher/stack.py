@@ -71,7 +71,6 @@ class Stack:
                       'dockerCompose': docker_compose,
                       'rancherCompose': rancher_compose}
         payload = util.build_payload(stack_data)
-
         end_point = self.config[
                         'rancherBaseUrl'] + self.rancherApiVersion + 'environment'
         response = requests.post(end_point,
@@ -133,7 +132,7 @@ class Stack:
 
     def __wait_for_upgrade(self, stack_id):
         print 'Let`s wait until stack upgraded...'
-        timeout = self.config.stackUpgradeTimeout
+        timeout = self.config['stackUpgradeTimeout']
         stop_time = int(time()) + timeout
         state = None
         while int(time()) <= stop_time:
@@ -146,7 +145,7 @@ class Stack:
 
     def __wait_for_active(self, stack_id):
         print 'Let`s wait until stack become active...'
-        timeout = self.config.stackActiveTimeout
+        timeout = self.config['stackActiveTimeout']
         stop_time = int(time()) + timeout
         state = None
         while int(time()) <= stop_time:
@@ -159,7 +158,7 @@ class Stack:
 
     def __wait_for_healthy(self, stack_id):
         print 'Let`s wait until stack become healthy...'
-        timeout = self.config.stackHealthyTimeout
+        timeout = self.config['stackHealthyTimeout']
         stop_time = int(time()) + timeout
         health_state = None
         while int(time()) <= stop_time:
