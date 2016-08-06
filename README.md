@@ -36,20 +36,20 @@ Examples:
 ```
 
 ####Add load balancer target, so service will be available via http
-* ```${HTTP_SERVICE_NAME}``` - is a service name from dockder-compose.yml
+* ```${HTTP_SERVICE_NAME}``` - is a service name from docker-compose.yml
 * ```${STACK_NAME}``` - stack name
 * ```${MY_DOMAIN}``` - domain where it will registered
-* **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```!!!
+* **NOTE!** host must always be built as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```!!!
 ```bash
 ./rancher-cli.py --action=add-link --externalPort=80 \
 --host=${HTTP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN} --internalPort=8080
 ```
 
-####If you want to add tcp service link which will be externally accesible you should set ```--externalPort``` parameter (and it should be registered on load balancer as tcp port)
-* ```${HTTP_SERVICE_NAME}``` - is a service name from dockder-compose.yml
+####If you want to add tcp service link which will be externally accessible you should set ```--externalPort``` parameter (and it should be registered on load balancer as tcp port)
+* ```${HTTP_SERVICE_NAME}``` - is a service name from docker-compose.yml
 * ```${STACK_NAME}``` - stack name
 * ```${MY_DOMAIN}``` - domain where it will registered
-* **NOTE!** host must always be builded as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```
+* **NOTE!** host must always be built as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```
 ```bash
 ./rancher-cli.py --action=add-link --externalPort=`./rancher-cli.py --action=get-port \
 --loadBalancerId=${RANCHER_LB_TCP_ID}` --host=${TCP_SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}
