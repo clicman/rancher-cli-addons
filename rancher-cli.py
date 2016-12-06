@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 
+from rancher import host
 from rancher import servicelink, service, stack
 
 
@@ -43,6 +44,9 @@ def main():
                         help="""target service id. Optional, parsed from hostname if not
                         set by pattern: serviceName.stackName.somedomain.TLD""")
     parser.add_argument('--host', help='target hostname')
+    parser.add_argument('--hostId', help='Host id where to find available port')
+    parser.add_argument('--portRangeStart', help='Start of desired port range')
+    parser.add_argument('--portRangeEnd', help='End of desired port range')
     parser.add_argument('--externalPort', help='external service port', type=int)
     parser.add_argument('--internalPort', default=None, type=int,
                         help='internal service port. Optional, not needed for remove action')
@@ -77,7 +81,7 @@ def main():
         exit(2)
 
     if args.action.lower() == 'get-port':
-        print servicelink.ServiceLink(config).get_available_port()
+        print host.Host(config).get_available_port(args.hostId, int(args.portRangeStart), int(args.portRangeEnd))
 
     elif args.action.lower() == 'get-service-port':
         print servicelink.ServiceLink(config).get_service_port(service_id)
