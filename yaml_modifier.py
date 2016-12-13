@@ -34,6 +34,12 @@ def get_from_dict(data_dict, map_list):
 
 
 def set_in_dict(data_ict, map_ist, value):
+    if value.startswith('['):
+        value = value[1::][:-1:].split(',')
+    if value[0].startswith('{'):
+        value[0] = value[0][1::]
+        value[len(value) - 1] = value[len(value) - 1][:-1:]
+        value = [dict(s.split(':') for s in value)]
     get_from_dict(data_ict, map_ist[:-1])[map_ist[-1]] = value
 
 
