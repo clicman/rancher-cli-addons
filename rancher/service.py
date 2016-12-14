@@ -117,8 +117,6 @@ class Service:
     def update_load_balancer_service(self, service_id, data):
         lb_config = self.__get_lb_service(service_id)
         payload = self.merge(lb_config, data)
-        print json.dumps(payload)
-        # return
         end_point = '{}{}loadbalancerservices/{}'.format(
             self.config['rancherBaseUrl'], '/v2-beta/', service_id)
         response = requests.put(end_point,
