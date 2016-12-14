@@ -75,7 +75,7 @@ def main():
         service_id = service.Service(config).parse_service_id(args.host)
 
     if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port',
-                                   'get-service-port', 'update-lb']:
+                                   'get-service-port', 'update-lb', 'get-svc-id']:
         parser.parse_args(['-h'])
         exit(2)
     if args.action.lower() == 'add' and internal_port is None:
@@ -103,6 +103,8 @@ def main():
 
     elif args.action.lower() == 'update-lb':
         service.Service(config).update_load_balancer_service(args.loadBalancerId, json.loads(args.data))
+    elif args.action.lower() == 'get-svc-id':
+        print service.Service(config).parse_service_id(args.host)
 
 
 main()
