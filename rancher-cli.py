@@ -39,7 +39,7 @@ def main():
     # Action params
     required_named = parser.add_argument_group('required arguments')
     required_named.add_argument('--action',
-                                help='add-link,  remove-lnk, create-stack, remove-stack, get-port, get-service-port')
+                                help='add-link,  remove-lnk, create-stack, remove-stack, get-port, get-service-port, upgrade-service')
     parser.add_argument('--serviceId',
                         help="""target service id. Optional, parsed from hostname if not
                         set by pattern: serviceName.stackName.somedomain.TLD""")
@@ -50,6 +50,8 @@ def main():
     parser.add_argument('--externalPort', help='external service port', type=int)
     parser.add_argument('--internalPort', default=None, type=int,
                         help='internal service port. Optional, not needed for remove action')
+    parser.add_argument('--data', default=None, type=str,
+                        help='Data payload. Optional')
     args = parser.parse_args()
     var_args = vars(args)
 
@@ -73,7 +75,7 @@ def main():
         service_id = service.Service(config).parse_service_id(args.host)
 
     if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port',
-                                   'get-service-port']:
+                                   'get-service-port', 'update-lb']:
         parser.parse_args(['-h'])
         exit(2)
     if args.action.lower() == 'add' and internal_port is None:
@@ -98,6 +100,9 @@ def main():
 
     elif args.action.lower() == 'remove-stack':
         stack.Stack(config).remove('name', args.stackName)
+
+    elif args.action.lower() == 'update-lb':
+        service.Service(config).update_load_balancer_service(args.loadBalancerId, json.loads(args.data))
 
 
 main()

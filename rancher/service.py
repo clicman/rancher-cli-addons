@@ -37,20 +37,22 @@ class Service:
 
         return service_id
 
-    def upgrade(self, host_name):
+    def upgrade(self, host_name, data=None):
         service_id = self.parse_service_id(host_name)
-        self.__init_upgrade(service_id)
+        self.__init_upgrade(service_id, data)
         self.__wait_for_upgrade(service_id)
         self.__wait_for_healthy(service_id)
         self.__finish_upgrade(service_id)
 
-    def __init_upgrade(self, service_id):
-        payload = '{}'
+    def __init_upgrade(self, service_id, data):
+        payload = self.__get(service_id)
+        if data is not None:
+            payload.update(data)
         end_point = '{}{}services/{}/?action=upgrade'.format(
             self.config['rancherBaseUrl'], self.rancherApiVersion, service_id)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers, verify=False, data=payload)
+                                 headers=self.request_headers, verify=False, data=json.dumps(payload))
         if response.status_code not in range(200, 300):
             exit.err(response.text)
 
@@ -95,6 +97,15 @@ class Service:
             exit.err(response.text)
         return json.loads(response.text)
 
+    def __get_lb_service(self, service_id):
+        end_point = self.config['rancherBaseUrl'] + '/v2-beta/' + 'loadbalancerservices/' + service_id
+        response = requests.get(end_point,
+                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                headers=self.request_headers, verify=False)
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+        return json.loads(response.text)
+
     def __get_state(self, service_id):
         service = self.__get(service_id)
         return service['state']
@@ -102,3 +113,36 @@ class Service:
     def __get_health_state(self, service_id):
         service = self.__get(service_id)
         return service['healthState']
+
+    def update_load_balancer_service(self, service_id, data):
+        lb_config = self.__get_lb_service(service_id)
+        payload = self.merge(lb_config, data)
+        print json.dumps(payload)
+        # return
+        end_point = '{}{}loadbalancerservices/{}'.format(
+            self.config['rancherBaseUrl'], '/v2-beta/', service_id)
+        response = requests.put(end_point,
+                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                headers=self.request_headers, verify=False, data=json.dumps(payload))
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+
+    def merge(self, a, b, path=None):
+        if path is None:
+            path = []
+        for key in b:
+            if key in a:
+                print key
+                if isinstance(a[key], dict) and isinstance(b[key], dict):
+                    self.merge(a[key], b[key], path + [str(key)])
+                elif a[key] == b[key]:
+                    pass  # same leaf value
+                elif isinstance(a[key], list) and isinstance(b[key], list):
+                    for item in b[key]:
+                        if item not in a[key]:
+                            a[key].append(item)
+                else:
+                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+            else:
+                a[key] = b[key]
+        return a
