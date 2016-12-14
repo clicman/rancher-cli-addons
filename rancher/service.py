@@ -130,7 +130,6 @@ class Service:
             path = []
         for key in b:
             if key in a:
-                print key
                 if isinstance(a[key], dict) and isinstance(b[key], dict):
                     self.merge(a[key], b[key], path + [str(key)])
                 elif a[key] == b[key]:
