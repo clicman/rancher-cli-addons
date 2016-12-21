@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import argparse
 import json
 import os
 
 from rancher import host
-from rancher import servicelink, service, stack
+from rancher import servicelink, service, stack, container
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
     # Action params
     required_named = parser.add_argument_group('required arguments')
     required_named.add_argument('--action',
-                                help='add-link,  remove-lnk, create-stack, remove-stack, get-port, get-service-port, upgrade-service')
+                                help='add-link,  remove-lnk, create-stack, remove-stack, get-port, get-service-port, upgrade-service, get-container-id, get-host-ip')
     parser.add_argument('--serviceId',
                         help="""target service id. Optional, parsed from hostname if not
                         set by pattern: serviceName.stackName.somedomain.TLD""")
@@ -75,7 +75,7 @@ def main():
         service_id = service.Service(config).parse_service_id(args.host)
 
     if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port',
-                                   'get-service-port', 'update-lb', 'get-svc-id']:
+                                   'get-service-port', 'update-lb', 'get-svc-id', 'get-container-id', 'get-host-ip']:
         parser.parse_args(['-h'])
         exit(2)
     if args.action.lower() == 'add' and internal_port is None:
@@ -103,8 +103,17 @@ def main():
 
     elif args.action.lower() == 'update-lb':
         service.Service(config).update_load_balancer_service(args.loadBalancerId, json.loads(args.data))
+
     elif args.action.lower() == 'get-svc-id':
         print service.Service(config).parse_service_id(args.host)
 
+    elif args.action.lower() == 'get-container-id':
+        instances = service.Service(config).get_service_instances(service_id)
+        print instances[0]['externalId']
+
+    elif args.action.lower() == 'get-host-ip':
+        instances = service.Service(config).get_service_instances(service_id)
+        host_id = instances[0]['hostId']
+        print host.Host(config).get_host_ip(host_id)
 
 main()

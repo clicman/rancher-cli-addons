@@ -24,17 +24,36 @@ class Host:
             return available_range[0]
         exit.err('There is no available ports')
 
-    def __get_host_ports(self, host_id):
+    def __get(self, host_id):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'hosts/' + host_id
         response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
-                                headers=self.request_headers, verify=False)
+                        auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                        headers=self.request_headers, verify=False)
         if response.status_code not in range(200, 300):
             exit.err(response.text)
 
-        data = json.loads(response.text)
+        return json.loads(response.text)
+
+    def __get_host_ports(self, host_id):
+        data = self.__get(host_id)
         public_endpoints = data['publicEndpoints']
         ports = []
         for endpoint in public_endpoints:
             ports.append(endpoint['port'])
         return ports
+
+    def get_host_ip(self, host_id):
+        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'hosts/' + host_id
+        response = requests.get(end_point,
+                            auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                            headers=self.request_headers, verify=False)
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+
+        data = json.loads(response.text)
+        if data['publicEndpoints']:
+            return data['publicEndpoints'][0]['ipAddress']
+        else:
+            exit.err('There is no public endpoints on host ' + host_id)
+
+

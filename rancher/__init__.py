@@ -1,1 +1,1 @@
-__all__ = ["ServiceLink, Stack, Service, Host"]
+__all__ = ["ServiceLink, Stack, Service, Host, Container"]
