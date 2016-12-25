@@ -78,15 +78,13 @@ def main():
                                    'get-service-port', 'update-lb', 'get-svc-id']:
         parser.parse_args(['-h'])
         exit(2)
-    if args.action.lower() == 'add' and internal_port is None:
-        parser.parse_args(['-h'])
-        exit(2)
 
+    # actions
     if args.action.lower() == 'get-port':
-        print host.Host(config).get_available_port(args.hostId, int(args.portRangeStart), int(args.portRangeEnd))
+        print (host.Host(config).get_available_port(args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
 
     elif args.action.lower() == 'get-service-port':
-        print servicelink.ServiceLink(config).get_service_port(service_id)
+        print (servicelink.ServiceLink(config).get_service_port(service_id))
 
     elif args.action.lower() == 'add-link':
         servicelink.ServiceLink(config).add_load_balancer_target(service_id, args.host, args.externalPort,
@@ -103,8 +101,9 @@ def main():
 
     elif args.action.lower() == 'update-lb':
         service.Service(config).update_load_balancer_service(args.loadBalancerId, json.loads(args.data))
+
     elif args.action.lower() == 'get-svc-id':
-        print service.Service(config).parse_service_id(args.host)
+        print (service.Service(config).parse_service_id(args.host))
 
 
 main()
