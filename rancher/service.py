@@ -28,6 +28,18 @@ class Service:
 
         exit.err('No such service ' + name)
 
+    def get_service_instances(self, service_id):
+        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'services/' + service_id + '/instances'
+        response = requests.get(end_point,
+                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                 headers=self.request_headers, verify=False)         
+        if response.status_code not in range(200, 300):
+            exit.err(response.text)
+        instances = json.loads(response.text)['data']
+        if not instances:
+            exit.err('No instances for service ' + service['name'])
+        return instances
+
     def parse_service_id(self, host_name):
         host_tokens = host_name.split('.')
         stack_name = host_tokens[1]
