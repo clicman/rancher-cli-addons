@@ -29,8 +29,7 @@ class ServiceLink:
         data = json.loads(response.text)['data']
         services = []
         for item in data:
-            if item['consumedServiceId'] in service_ids and 'ports' in item:
-                if item['ports'] is not None:
+            if item['consumedServiceId'] in service_ids and 'ports' in item and item['ports'] is not None:
                     services.append(
                         {'serviceId': item['consumedServiceId'], 'ports': item['ports'], 'state': item['state']})
         return services

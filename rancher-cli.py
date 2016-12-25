@@ -107,11 +107,11 @@ def main():
 
     elif args.action.lower() == 'get-container-id':
         instances = service.Service(config).get_service_instances(service_id)
-        print instances[0]['externalId']
+        print (instances[0]['externalId'])
 
     elif args.action.lower() == 'get-host-ip':
         instances = service.Service(config).get_service_instances(service_id)
         host_id = instances[0]['hostId']
-        print host.Host(config).get_host_ip(host_id)
+        print (host.Host(config).get_host_ip(host_id))
 
 main()

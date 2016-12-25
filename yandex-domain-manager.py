@@ -27,7 +27,7 @@ def main():
         exit(1)
 
     if args.token is None:
-        print 'Api token not defined'
+        print ('Api token not defined')
         parser.parse_args(['-h'])
         exit(1)
 
@@ -38,7 +38,7 @@ def main():
 
     if args.action == 'add':
         if args.ip is None:
-            print 'Ip not set'
+            print ('Ip not set')
             parser.parse_args(['-h'])
             exit(2)
         add(domain, subdomain, args.ttl, args.ip)
@@ -55,14 +55,14 @@ def add(domain_name, subdomain_name, ttl, ip):
     if response.status_code not in range(200, 300) or (
                     json.loads(response.text)['success'] == 'error' and
                     json.loads(response.text)['error'] != 'record_exists'):
-        print 'Failed to add domain: ' + response.text
+        print ('Failed to add domain: ' + response.text)
         exit(2)
 
 
 def remove(domain_name, fqdn):
     record_id = __get_record_id(domain_name, fqdn)
     if record_id is None:
-        print 'No such domain'
+        print ('No such domain')
         exit(0)
     params = {'domain': domain_name, 'record_id': record_id}
     end_point = base_url + '/dns/del'
@@ -72,7 +72,7 @@ def remove(domain_name, fqdn):
     if response.status_code not in range(200, 300) or (
                     json.loads(response.text)['success'] == 'error' and
                     json.loads(response.text)['error'] != 'no_such_record'):
-        print 'Failed to remove domain: ' + response.text
+        print ('Failed to remove domain: ' + response.text)
         exit(2)
 
 
@@ -81,7 +81,7 @@ def __get_record_id(domain_name, fqdn):
     response = requests.get(end_point, headers=request_headers)
 
     if response.status_code not in range(200, 300) or json.loads(response.text)['success'] == 'error':
-        print response.text
+        print (response.text)
         exit(2)
 
     records = json.loads(response.text)['records']
