@@ -17,6 +17,8 @@ def main():
                         help='api key, $RANCHER_API_KEY environment variable can be used')
     parser.add_argument('--apiSecret', default=os.environ.get('RANCHER_API_SECRET'),
                         help='api secret, $RANCHER_API_SECRET environment variable can be used')
+    parser.add_argument('--projectId', default=os.environ.get('RANCHER_PROJECT_ID'),
+                        help='project environment, $RANCHER_PROJECT_ID environment variable can be used')
     parser.add_argument('--loadBalancerId', default=os.environ.get('RANCHER_LB_ID'),
                         help='load balancer service id, $RANCHER_LB_ID environment variable can be used')
 
@@ -65,6 +67,7 @@ def main():
     config = {'rancherBaseUrl': args.apiUrl,
               'rancherApiAccessKey': args.apiKey,
               'rancherApiSecretKey': args.apiSecret,
+              'rancherProjectId': args.projectId,
               'loadBalancerSvcId': args.loadBalancerId,
               'stackUpgradeTimeout': args.stackUpgradeTimeout,
               'stackActiveTimeout': args.stackActiveTimeout,

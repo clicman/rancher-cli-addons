@@ -53,15 +53,16 @@ class Stack:
         docker_compose = self.__get_docker_compose(docker_compose_path)
         rancher_compose = self.__get_rancher_compose(rancher_compose_path)
 
-        stack_data = {'type': 'environment',
-                      'startOnCreate': True,
-                      'name': name,
-                      'environment': environment,
-                      'dockerCompose': docker_compose,
-                      'rancherCompose': rancher_compose}
+        stack_data = {
+            "type": "stack",
+            "startOnCreate": True,
+            "name": name,
+            'dockerCompose': docker_compose,
+            'rancherCompose': rancher_compose}
         payload = util.build_payload(stack_data)
         end_point = self.config[
-                        'rancherBaseUrl'] + self.rancherApiVersion + 'environment'
+                        'rancherBaseUrl'] + '/v2-beta/' + 'projects/' + self.config['rancherProjectId'] + '/stack'
+        print(end_point)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                  headers=self.request_headers, verify=False, data=payload)

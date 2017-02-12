@@ -31,8 +31,8 @@ class Service:
     def get_service_instances(self, service_id):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'services/' + service_id + '/instances'
         response = requests.get(end_point,
-                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers, verify=False)         
+                                auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
+                                headers=self.request_headers, verify=False)
         if response.status_code not in range(200, 300):
             exit.err(response.text)
         instances = json.loads(response.text)['data']
@@ -130,7 +130,7 @@ class Service:
         lb_config = self.__get_lb_service(service_id)
         payload = self.merge(lb_config, data)
         end_point = '{}{}loadbalancerservices/{}'.format(
-            self.config['rancherBaseUrl'], '/v2-beta/', service_id)
+            self.config['rancherBaseUrl'], '/v2-beta/projects/' + self.config['rancherProjectId'] + '/', service_id)
         response = requests.put(end_point,
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                 headers=self.request_headers, verify=False, data=json.dumps(payload))
