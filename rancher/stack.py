@@ -60,8 +60,7 @@ class Stack:
             'dockerCompose': docker_compose,
             'rancherCompose': rancher_compose}
         payload = util.build_payload(stack_data)
-        end_point = self.config[
-                        'rancherBaseUrl'] + '/v2-beta/' + 'projects/' + self.config['rancherProjectId'] + '/stack'
+        end_point = self.config['rancherBaseUrl'] + '/v2-beta/' + 'projects/' + self.config['rancherProjectId'] + '/stack'
         print(end_point)
         response = requests.post(end_point,
                                  auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),

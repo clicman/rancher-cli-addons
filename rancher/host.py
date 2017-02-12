@@ -2,7 +2,7 @@ import json
 
 import re
 
-from rancher import exit, util
+from rancher import exit, util, service
 import requests
 
 
@@ -13,12 +13,19 @@ class Host:
     def __init__(self, configuration):
         self.config = configuration
 
-    def get_available_port(self, host_id, start, end):
+    def get_available_port(self, stack_svc, host_id, start, end):
+        service_id = None
+        if stack_svc is not None:
+            service_id = service.Service(self.config).parse_service_id(stack_svc)
+        print(service_id)
+
         ports = self.__get_host_ports(host_id)
         available_range = range(start, end+1)
         for port in ports:
-            if port in available_range:
-                available_range.remove(port)
+            if port['port'] in available_range:
+                if port['serviceId'] == service_id:
+                    return port['port']
+                available_range.remove(port['port'])
 
         if len(available_range) > 0:
             return available_range[0]
@@ -40,7 +47,7 @@ class Host:
         ports = []
         for endpoint in public_endpoints:
             ports.append(endpoint['port'])
-        return ports
+        return public_endpoints
 
     def get_host_ip(self, host_id):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'hosts/' + host_id

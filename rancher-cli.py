@@ -38,6 +38,8 @@ def main():
                         help='Rancher compose path (optional)', default=None)
     parser.add_argument('--stackEnvironment', default='{}',
                         help='Stack environment variables json')
+    parser.add_argument('--stackSvc', default=None,
+                        help='Stack/Service string')
     # Action params
     required_named = parser.add_argument_group('required arguments')
     required_named.add_argument('--action',
@@ -84,7 +86,7 @@ def main():
 
     # actions
     if args.action.lower() == 'get-port':
-        print (host.Host(config).get_available_port(args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
+        print (host.Host(config).get_available_port(args.stackSvc, args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
 
     elif args.action.lower() == 'get-service-port':
         print (servicelink.ServiceLink(config).get_service_port(service_id))
