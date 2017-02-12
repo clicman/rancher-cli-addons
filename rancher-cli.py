@@ -79,7 +79,7 @@ def main():
               }
 
     if service_id is None and args.host is not None:
-        service_id = service.Service(config).parse_service_id(args.host)
+        service_id = service.Service(config).parse_service_id(args.host, True)
 
     if args.action.lower() not in ['add-link', 'remove-link', 'create-stack', 'remove-stack', 'get-port',
                                    'get-service-port', 'update-lb', 'get-svc-id', 'get-container-id', 'get-host-ip']:
@@ -88,7 +88,6 @@ def main():
 
     # actions
     if args.action.lower() == 'get-port':
-        # print (host.Host(config).get_available_port(args.stackSvc, args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
         print servicelink.ServiceLink(config).get_available_port(args.loadBalancerId,int(args.portRangeStart), int(args.portRangeEnd), service_id);
 
     elif args.action.lower() == 'get-service-port':
