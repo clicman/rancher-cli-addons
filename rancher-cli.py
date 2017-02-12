@@ -88,7 +88,8 @@ def main():
 
     # actions
     if args.action.lower() == 'get-port':
-        print (host.Host(config).get_available_port(args.stackSvc, args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
+        # print (host.Host(config).get_available_port(args.stackSvc, args.hostId, int(args.portRangeStart), int(args.portRangeEnd)))
+        print servicelink.ServiceLink(config).get_available_port(args.loadBalancerId,int(args.portRangeStart), int(args.portRangeEnd), service_id);
 
     elif args.action.lower() == 'get-service-port':
         print (servicelink.ServiceLink(config).get_service_port(service_id))

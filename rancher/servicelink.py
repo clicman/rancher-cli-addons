@@ -34,9 +34,8 @@ class ServiceLink:
                         {'serviceId': item['consumedServiceId'], 'ports': item['ports'], 'state': item['state']})
         return services
 
-    def __get_load_balancer_ports(self):
-        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + self.config[
-            'loadBalancerSvcId']
+    def __get_load_balancer_ports(self, lb_svc_id):
+        end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'loadbalancerservices/' + lb_svc_id
         response = requests.get(end_point,
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
                                 headers=self.request_headers, verify=False)
@@ -44,7 +43,7 @@ class ServiceLink:
             exit.err(response.text)
 
         data = json.loads(response.text)
-        return data['launchConfig']['ports']
+        return data['lbConfig']['portRules']
 
     def __set_load_balancer_targets(self, targets):
         payload = util.build_payload({'serviceLinks': targets})
@@ -127,21 +126,16 @@ class ServiceLink:
         if response.status_code not in range(200, 300):
             exit.err(response.text)
 
-    def get_available_port(self):
-        ports = self.__get_load_balancer_ports()
-        port_list = []
+    def get_available_port(self, lb_svc_id, ports_start, ports_end, svc_id=None):
+        available_range = range(ports_start, ports_end+1)
+        ports = self.__get_load_balancer_ports(lb_svc_id)
         for port in ports:
-            if '/tcp' in port:
-                port_list.append(port.split(':')[0])
-        targets = self.__get_load_balancer_targets()
-        for target in targets:
-            if 'ports' in target:
-                # noinspection PyTypeChecker
-                for port in target['ports']:
-                    if re.compile("^\d+=\d+$").match(port) is not None:
-                        port_list.remove(port.split('=')[0])
-        if len(port_list) > 0:
-            return port_list[0]
+            if port['protocol'] == 'tcp' and port['sourcePort'] in available_range:
+                if port['serviceId'] == svc_id:
+                    return port['sourcePort']
+                available_range.remove(port['sourcePort'])
+        if len(available_range) > 0:
+            return available_range[0]
         exit.err('There is no available ports')
 
     def get_service_port(self, service_id):
