@@ -12,7 +12,7 @@ class Stack:
     def __init__(self, configuration):
         self.config = configuration
 
-    def get_stack_id(self, name):
+    def get_stack_id(self, name, no_error=False):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'environments?limit=-1'
         response = requests.get(end_point,
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
@@ -26,7 +26,9 @@ class Stack:
             if 'name' in environment and environment['name'] == name:
                 return environment['id']
 
-        exit.err('No such stack ' + name)
+        if not no_error:
+            exit.err('No such stack ' + name)
+        return None
 
     def remove(self, value_type, value):
         payload = '{}'

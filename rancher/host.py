@@ -16,7 +16,7 @@ class Host:
     def get_available_port(self, stack_svc, host_id, start, end):
         service_id = None
         if stack_svc is not None:
-            service_id = service.Service(self.config).parse_service_id(stack_svc)
+            service_id = service.Service(self.config).parse_service_id(stack_svc, True)
 
         ports = self.__get_host_ports(host_id)
         available_range = range(start, end+1)

@@ -12,7 +12,7 @@ class Service:
     def __init__(self, configuration):
         self.config = configuration
 
-    def __get_service_id(self, stack_id, name):
+    def __get_service_id(self, stack_id, name, no_error=False):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'environments/' + stack_id + '/services'
         response = requests.get(end_point,
                                 auth=(self.config['rancherApiAccessKey'], self.config['rancherApiSecretKey']),
@@ -25,8 +25,10 @@ class Service:
         for service in data:
             if 'name' in service and service['name'] == name:
                 return service['id']
-
-        exit.err('No such service ' + name)
+        if not no_error:
+            exit.err('No such service ' + name)
+        else:
+            return None
 
     def get_service_instances(self, service_id):
         end_point = self.config['rancherBaseUrl'] + self.rancherApiVersion + 'services/' + service_id + '/instances'
@@ -37,17 +39,21 @@ class Service:
             exit.err(response.text)
         instances = json.loads(response.text)['data']
         if not instances:
-            exit.err('No instances for service ' + service['name'])
+            exit.err('No instances for service ' + service_id)
         return instances
 
-    def parse_service_id(self, host_name):
+    def parse_service_id(self, host_name, no_error=False):
         host_tokens = host_name.split('.')
         stack_name = host_tokens[1]
         service_name = host_tokens[0]
-        stack_id = Stack(self.config).get_stack_id(stack_name)
+        stack_id = Stack(self.config).get_stack_id(stack_name, no_error)
+        if stack_id is None:
+            return None
         service_id = self.__get_service_id(stack_id, service_name)
-
-        return service_id
+        if service_id is None:
+            return None
+        else:
+            return service_id
 
     def upgrade(self, host_name, data=None):
         service_id = self.parse_service_id(host_name)
