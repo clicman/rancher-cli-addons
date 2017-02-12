@@ -24,6 +24,8 @@ def main():
 
     parser.add_argument('--stackName',
                         help='Stack name')
+    parser.add_argument('--stackTags',
+                        help='Comma separated stack tags (optional)', default=None)
 
     parser.add_argument('--stackUpgradeTimeout', default=os.environ.get('STACK_UPGRADE_TIMEOUT', 360),
                         help='timeout for stack upgrade in seconds. Default 360')
@@ -98,8 +100,7 @@ def main():
         servicelink.ServiceLink(config).remove_load_balancer_target(service_id, args.host, args.externalPort)
 
     elif args.action.lower() == 'create-stack':
-        stack_environment = json.loads(args.stackEnvironment)
-        stack.Stack(config).create(args.stackName, args.dockerCompose, args.rancherCompose, stack_environment)
+        stack.Stack(config).create(args.stackName, args.dockerCompose, args.rancherCompose, args.stackTags)
 
     elif args.action.lower() == 'remove-stack':
         stack.Stack(config).remove('name', args.stackName)

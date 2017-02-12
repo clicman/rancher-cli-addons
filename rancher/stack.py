@@ -48,9 +48,7 @@ class Stack:
         if response.status_code not in range(200, 300):
             exit.err('Could not remove stack: {}'.format(response.text))
 
-    def create(self, name, docker_compose_path, rancher_compose_path, environment=None):
-        if environment is None:
-            environment = {}
+    def create(self, name, docker_compose_path, rancher_compose_path, stack_tags=None):
         print ('Creating stack ' + name + '...')
         docker_compose = self.__get_docker_compose(docker_compose_path)
         rancher_compose = self.__get_rancher_compose(rancher_compose_path)
@@ -59,6 +57,7 @@ class Stack:
             "type": "stack",
             "startOnCreate": True,
             "name": name,
+            "group": stack_tags,
             'dockerCompose': docker_compose,
             'rancherCompose': rancher_compose}
         payload = util.build_payload(stack_data)
