@@ -1,2 +1,5 @@
 /export-auth
 *.iml
+/.idea/
+**.pyc
+/services/
