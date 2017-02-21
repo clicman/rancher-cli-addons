@@ -19,7 +19,6 @@ request_headers = {}
 
 
 def main():
-    args = []
     try:
         args = parser.parse_args()
     except SystemExit:
