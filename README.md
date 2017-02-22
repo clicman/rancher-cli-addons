@@ -1,5 +1,5 @@
 # Rancher Client Addons
-In reaction to [rancher #4570](https://github.com/rancher/rancher/issues/4570) 
+It works with stable Rancher realses only.
 
 ##Features
 * Create/Upgrade/Remove stack
