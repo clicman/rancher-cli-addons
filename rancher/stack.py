@@ -17,7 +17,7 @@ def get_stack_id(name, no_error=False):
     data = json.loads(response.text)['data']
     for environment in data:
         if 'name' in environment and environment['name'] == name:
-            return environment['id']
+            return environment['id'].replace('e', 'st')
 
     if not no_error:
         shutdown.err('No such stack ' + name)
