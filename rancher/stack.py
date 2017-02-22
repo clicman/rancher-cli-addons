@@ -161,8 +161,6 @@ def __get_health_state(stack_id):
     service = __get(stack_id)
     return service['healthState']
 
-
-@staticmethod
 def __get_docker_compose(docker_compose_path):
     try:
         with open(docker_compose_path) as file_object:
@@ -173,7 +171,6 @@ def __get_docker_compose(docker_compose_path):
                 docker_compose_path, ex.message))
 
 
-@staticmethod
 def __get_rancher_compose(rancher_compose_path):
     if rancher_compose_path is None:
         return ''
