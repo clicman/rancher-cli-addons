@@ -1,50 +1,38 @@
+"""Service operations"""
+
 import json
 from time import sleep, time
-import requests
-from rancher import Stack, exit, API
+from rancher import Stack, shutdown, API, http_util, config
 
 
 class Service(object):
     """Service operations"""
-    request_headers = {'Content-Type': 'application/json',
-                       'Accept': 'application/json'}
-
-    def __init__(self, configuration):
-        self.config = configuration
 
     def __get_service_id(self, stack_id, name, no_error=False):
-        end_point = self.config['rancherBaseUrl'] + '/' + \
-            API.V1 + '/environments/' + stack_id + '/services'
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'], self.config[
-                                    'rancherApiSecretKey']),
-                                headers=self.request_headers, verify=False)
-
+        end_point = '{}/{}/services'.format(API.V1, stack_id)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
         data = json.loads(response.text)['data']
         for service in data:
             if 'name' in service and service['name'] == name:
                 return service['id']
         if not no_error:
-            exit.err('No such service ' + name)
+            shutdown.err('No such service ' + name)
         else:
             return None
 
     def get_service_instances(self, service_id):
         """Get service instances"""
-        end_point = self.config[
-            'rancherBaseUrl'] + '/' + API.V1 + '/services/' + service_id + '/instances'
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'], self.config[
-                                    'rancherApiSecretKey']),
-                                headers=self.request_headers, verify=False)
+
+        end_point = '{}/services/{}/instances'.format(API.V1, service_id)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
         instances = json.loads(response.text)['data']
         if not instances:
-            exit.err('No instances for service ' + service_id)
+            shutdown.err('No instances for service ' + service_id)
         return instances
 
     def parse_service_id(self, host_name, no_error=False):
@@ -52,7 +40,7 @@ class Service(object):
         host_tokens = host_name.split('.')
         stack_name = host_tokens[1]
         service_name = host_tokens[0]
-        stack_id = Stack(self.config).get_stack_id(stack_name, no_error)
+        stack_id = Stack().get_stack_id(stack_name, no_error)
         if stack_id is None:
             return None
         service_id = self.__get_service_id(stack_id, service_name)
@@ -73,29 +61,17 @@ class Service(object):
         payload = self.__get(service_id)
         if data is not None:
             payload.update(data)
-        end_point = '{}{}services/{}/?action=upgrade'.format(
-            self.config['rancherBaseUrl'], API.V1, service_id)
-        response = requests.post(end_point,
-                                 auth=(self.config['rancherApiAccessKey'],
-                                       self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers,
-                                 verify=False,
-                                 data=json.dumps(payload))
+        end_point = '{}/services/{}/?action=upgrade'.format(API.V1, service_id)
+        response = http_util.post(end_point, data)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
     def __finish_upgrade(self, service_id):
-        payload = '{}'
-        end_point = '{}{}services/{}/?action=finishupgrade'.format(
-            self.config['rancherBaseUrl'], API.V1, service_id)
-        response = requests.post(end_point,
-                                 auth=(self.config['rancherApiAccessKey'],
-                                       self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers,
-                                 verify=False,
-                                 data=payload)
+        end_point = '{}services/{}/?action=finishupgrade'.format(
+            API.V1, service_id)
+        response = http_util.post(end_point, {})
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
     def __wait_for_upgrade(self, service_id):
         timeout = 360
@@ -106,7 +82,7 @@ class Service(object):
             if state == 'upgraded':
                 return
             sleep(5)
-        exit.err(
+        shutdown.err(
             'Timeout while waiting to service upgrade. Current state is: ' + state)
 
     def __wait_for_healthy(self, service_id):
@@ -118,32 +94,23 @@ class Service(object):
             if health_state == 'healthy':
                 return
             sleep(5)
-        exit.err(
+        shutdown.err(
             'Timeout while waiting to service become healthy. Current health state is: '
             + health_state)
 
     def __get(self, service_id):
-        end_point = self.config['rancherBaseUrl'] + '/'\
-            + API.V1 + '/services/' + service_id
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers,
-                                verify=False)
+        end_point = '{}/services/{}'.format(API.V1, service_id)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
         return json.loads(response.text)
 
     def __get_lb_service(self, service_id):
-        end_point = self.config['rancherBaseUrl'] + '/' +\
-            API.V2_BETA + '/loadbalancerservices/' + service_id
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers,
-                                verify=False)
+        end_point = '{}/loadbalancerservices/{}'.format(
+            API.V2_BETA, service_id)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
         return json.loads(response.text)
 
     def __get_state(self, service_id):
@@ -156,22 +123,18 @@ class Service(object):
 
     def update_load_balancer_service(self, service_id, data):
         """Update load balancer target"""
+
         lb_config = self.__get_lb_service(service_id)
         payload = self.merge(lb_config, data)
-        end_point = '{}/{}/{}/{}/loadbalancerservices/{}'.format(
-            self.config['rancherBaseUrl'],
-            API.V2_BETA, 'projects', self.config['rancherProjectId'], service_id)
-        response = requests.put(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers,
-                                verify=False,
-                                data=json.dumps(payload))
+        end_point = '{}/projects/{}/loadbalancerservices/{}'.format(
+            API.V2_BETA, config.RANCHER_PROJECT_ID, service_id)
+        response = http_util.put(end_point, payload)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
     def merge(self, left, right, path=None):
         """Merge dicts"""
+
         if path is None:
             path = []
         for key in right:

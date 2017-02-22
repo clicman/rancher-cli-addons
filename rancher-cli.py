@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 
-from rancher import ServiceLink, Service, Stack, Container, Host
+from rancher import ServiceLink, Service, Stack, Host, config
 
 
 def main():
@@ -70,15 +70,14 @@ def main():
         parser.parse_args(['-h'])
         exit(2)
 
-    config = {'rancherBaseUrl': args.apiUrl,
-              'rancherApiAccessKey': args.apiKey,
-              'rancherApiSecretKey': args.apiSecret,
-              'rancherProjectId': args.projectId,
-              'loadBalancerSvcId': args.loadBalancerId,
-              'stackUpgradeTimeout': args.stackUpgradeTimeout,
-              'stackActiveTimeout': args.stackActiveTimeout,
-              'stackHealthyTimeout': args.stackHealthyTimeout
-             }
+    config.RANCHER_BASE_URL = args.apiUrl
+    config.RANCHER_API_ACCESS_KEY = args.apiKey
+    config.RANCHER_API_SECRET_KEY = args.apiSecret
+    config.RANCHER_PROJECT_ID = args.projectId
+    config.LOAD_BALANCER_SVC_ID = args.loadBalancerId
+    config.STACK_UPGRADE_TIMEOUT = args.stackUpgradeTimeout
+    config.STACK_ACTIVE_TIMEOUT = args.stackActiveTimeout
+    config.STACK_HEALTHY_TIMEOUT = args.stackHealthyTimeout
 
     if service_id is None and args.host is not None:
         service_id = Service(config).parse_service_id(args.host, True)
@@ -92,41 +91,41 @@ def main():
 
     # actions
     if args.action.lower() == 'get-port':
-        print ServiceLink(config).get_available_port(args.loadBalancerId,
-                                                     int(args.portRangeStart),
-                                                     int(args.portRangeEnd), service_id)
+        print ServiceLink().get_available_port(args.loadBalancerId,
+                                               int(args.portRangeStart),
+                                               int(args.portRangeEnd), service_id)
 
     elif args.action.lower() == 'get-service-port':
-        print ServiceLink(config).get_service_port(service_id)
+        print ServiceLink().get_service_port(service_id)
 
     elif args.action.lower() == 'add-link':
-        ServiceLink(config).add_load_balancer_target(service_id, args.host, args.externalPort,
-                                                     internal_port)
+        ServiceLink().add_load_balancer_target(service_id, args.host, args.externalPort,
+                                               internal_port)
     elif args.action.lower() == 'remove-link':
-        ServiceLink(config).remove_load_balancer_target(
+        ServiceLink().remove_load_balancer_target(
             service_id, args.host, args.externalPort)
 
     elif args.action.lower() == 'create-stack':
-        Stack(config).create(args.stackName, args.dockerCompose,
-                             args.rancherCompose, args.stackTags)
+        Stack().create(args.stackName, args.dockerCompose,
+                       args.rancherCompose, args.stackTags)
 
     elif args.action.lower() == 'remove-stack':
-        Stack(config).remove('name', args.stackName)
+        Stack().remove('name', args.stackName)
 
     elif args.action.lower() == 'update-lb':
-        Service(config).update_load_balancer_service(
+        Service().update_load_balancer_service(
             args.loadBalancerId, json.loads(args.data))
 
     elif args.action.lower() == 'get-svc-id':
-        print Service(config).parse_service_id(args.host)
+        print Service().parse_service_id(args.host)
 
     elif args.action.lower() == 'get-container-id':
-        instances = Service(config).get_service_instances(service_id)
+        instances = Service().get_service_instances(service_id)
         print instances[0]['externalId']
 
     elif args.action.lower() == 'get-host-ip':
-        instances = Service(config).get_service_instances(service_id)
+        instances = Service().get_service_instances(service_id)
         host_id = instances[0]['hostId']
-        print Host(config).get_host_ip(host_id)
+        print Host().get_host_ip(host_id)
 
 main()

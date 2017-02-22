@@ -1,4 +1,7 @@
+""" Rancher API version constants """
+
 class API(object):
     """ Rancher API version constants """
-    V1 = "v1"
-    V2_BETA = "v2-beta"
+
+    V1 = 'v1'
+    V2_BETA = 'v2-beta'

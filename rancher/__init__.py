@@ -1,4 +1,5 @@
-''' Rancher Package '''
+""" Rancher Package """
+
 from ._api import API
 from ._container import Container
 from ._host import Host

@@ -1,16 +1,12 @@
+"""Manage service links"""
+
 import json
 import re
-from rancher import exit, util, API
-import requests
+from rancher import shutdown, http_util, API, config
 
 
 class ServiceLink(object):
     """Manage service links"""
-    request_headers = {'Content-Type': 'application/json',
-                       'Accept': 'application/json'}
-
-    def __init__(self, configuration):
-        self.config = configuration
 
     def __get_load_balancer_targets(self):
         services = self.get_load_balancer_services()
@@ -18,15 +14,10 @@ class ServiceLink(object):
         for svc in services:
             service_ids.append(svc['id'])
 
-        end_point = self.config['rancherBaseUrl'] + \
-            '/' + API.V1 + '/serviceconsumemaps?limit=-1'
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers,
-                                verify=False)
+        end_point = '{}/serviceconsumemaps?limit=-1'.format(API.V1)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
         data = json.loads(response.text)['data']
         services = []
@@ -39,33 +30,25 @@ class ServiceLink(object):
         return services
 
     def __get_load_balancer_ports(self, lb_svc_id):
-        end_point = self.config[
-            'rancherBaseUrl'] + '/' + API.V1 + '/loadbalancerservices/' + lb_svc_id
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers, verify=False)
+        end_point = '{}/loadbalancerservices/{}'.format(API.V1, lb_svc_id)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
         data = json.loads(response.text)
         return data['lbConfig']['portRules']
 
     def __set_load_balancer_targets(self, targets):
-        payload = util.build_payload({'serviceLinks': targets})
-        end_point = '{}/{}/loadbalancerservices/{}/?action=setservicelinks'.format(
-            self.config['rancherBaseUrl'], API.V1, self.config['loadBalancerSvcId'])
-        response = requests.post(end_point,
-                                 auth=(self.config['rancherApiAccessKey'],
-                                       self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers,
-                                 verify=False,
-                                 data=payload)
+        payload = {'serviceLinks': targets}
+        end_point = '{}/loadbalancerservices/{}/?action=setservicelinks'.format(
+            API.V1, config.LOAD_BALANCER_SVC_ID)
+        response = http_util.post(end_point, payload)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
     def add_load_balancer_target(self, svc_id, host, desired_port, internal_port):
         """Add load balancer port"""
+
         port_set = False
         targets = self.__get_load_balancer_targets()
         tcp_ports = self.__get_load_balancer_ports(svc_id)
@@ -78,8 +61,9 @@ class ServiceLink(object):
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)) \
                             or (port.endswith('=' + str(internal_port)) and
-                                re.compile("^\\d+=\\d+$").match(port) is not None):
-                        exit.info('This target already exists: ' + str(target))
+                                    re.compile("^\\d+=\\d+$").match(port) is not None):
+                        shutdown.info(
+                            'This target already exists: ' + str(target))
 
                 if str(desired_port) + ':' + str(desired_port) + '/tcp' in tcp_ports:
                     target['ports'].append(
@@ -104,6 +88,7 @@ class ServiceLink(object):
 
     def remove_load_balancer_target(self, svc_id, host, desired_port):
         """Remove load balancer target"""
+
         port_removed = False
         targets = self.__get_load_balancer_targets()
         for idx, target in reversed(list(enumerate(targets))):
@@ -114,7 +99,7 @@ class ServiceLink(object):
                 for port in target['ports']:
                     if port.lower().startswith(host.lower() + ':' + str(desired_port)) \
                             or (port.startswith(str(desired_port) + '=')
-                                and re.compile("^\\d+=\\d+$").match(port) is not None):
+                                    and re.compile("^\\d+=\\d+$").match(port) is not None):
                         target['ports'].remove(port)
                         port_removed = True
                         if len(target['ports']) > 0:
@@ -127,25 +112,20 @@ class ServiceLink(object):
                             # if port_removed:
                             # break
         if not port_removed:
-            exit.info('No such target')
+            shutdown.info('No such target')
         self.__set_load_balancer_targets(targets)
         self.__update_load_balancer_service()
 
     def __update_load_balancer_service(self):
-        payload = '{}'
-        end_point = '{}/{}/loadbalancerservices/{}/?action=update'.format(
-            self.config['rancherBaseUrl'], API.V1, self.config['loadBalancerSvcId'])
-        response = requests.post(end_point,
-                                 auth=(self.config['rancherApiAccessKey'],
-                                       self.config['rancherApiSecretKey']),
-                                 headers=self.request_headers,
-                                 verify=False,
-                                 data=payload)
+        end_point = '{}/loadbalancerservices/{}/?action=update'.format(
+            API.V1, config.LOAD_BALANCER_SVC_ID)
+        response = http_util.post(end_point, {})
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
     def get_available_port(self, lb_svc_id, ports_start, ports_end, svc_id=None):
         """Get available port"""
+
         available_range = range(ports_start, ports_end + 1)
         ports = self.__get_load_balancer_ports(lb_svc_id)
         for port in ports:
@@ -155,15 +135,14 @@ class ServiceLink(object):
                 available_range.remove(port['sourcePort'])
         if len(available_range) > 0:
             return available_range[0]
-        exit.err('There is no available ports')
+        shutdown.err('There is no available ports')
 
     def get_service_port(self, service_id):
         """Get service port"""
+
         targets = self.__get_load_balancer_targets()
         for target in targets:
-            # noinspection PyTypeChecker
             if target['serviceId'] == str(service_id) and 'ports' in target:
-                # noinspection PyTypeChecker
                 port = target['ports'][0]
                 if ':' in port:
                     return port.split(':')[1].split('=')[0]
@@ -173,16 +152,12 @@ class ServiceLink(object):
 
     def get_load_balancer_services(self):
         """Get LB service"""
-        end_point = self.config['rancherBaseUrl'] + '/' + \
-            API.V1 + '/loadbalancerservices/' + self.config[
-                'loadBalancerSvcId'] + '/consumedservices'
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'],
-                                      self.config['rancherApiSecretKey']),
-                                headers=self.request_headers,
-                                verify=False)
+
+        end_point = '{}/loadbalancerservices/{}/consumedservices'.format(
+            API.V1, config.LOAD_BALANCER_SVC_ID)
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
 
         data = json.loads(response.text)
         return data['data']

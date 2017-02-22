@@ -1,27 +1,19 @@
+""" Manages containers """
+
 import json
-import requests
-from rancher import exit
-from rancher import API
+from rancher import shutdown
+from rancher import API, http_util
 
 
 class Container(object):
-    """Manages containers"""
-    rancherApiVersion = '/v1/'
-    request_headers = {'Content-Type': 'application/json',
-                       'Accept': 'application/json'}
-
-    def __init__(self, configuration):
-        self.config = configuration
+    """ Manages containers """
 
     def __get(self, instance_id):
-        end_point = self.config['rancherBaseUrl'] + \
-            "/" + API.V2_BETA + '/containers/' + instance_id
-        response = requests.get(end_point,
-                                auth=(self.config['rancherApiAccessKey'], self.config[
-                                    'rancherApiSecretKey']),
-                                headers=self.request_headers, verify=False)
+        end_point = '{}/containers/{}'.format(API.V2_BETA, instance_id)
+
+        response = http_util.get(end_point)
         if response.status_code not in range(200, 300):
-            exit.err(response.text)
+            shutdown.err(response.text)
         return json.loads(response.text)
 
     def get_host_id(self, instance_id):
