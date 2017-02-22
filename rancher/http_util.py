@@ -1,7 +1,7 @@
 """Simple HTTP util for Rancher API"""
 
 import requests
-from rancher import config
+from . import config
 
 _GET = 'get'
 _POST = 'post'
