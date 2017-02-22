@@ -92,22 +92,22 @@ def main():
     # actions
     if args.action.lower() == 'get-port':
         print servicelink.get_available_port(args.loadBalancerId,
-                                               int(args.portRangeStart),
-                                               int(args.portRangeEnd), service_id)
+                                             int(args.portRangeStart),
+                                             int(args.portRangeEnd), service_id)
 
     elif args.action.lower() == 'get-service-port':
         print servicelink.get_service_port(service_id)
 
     elif args.action.lower() == 'add-link':
         servicelink.add_load_balancer_target(service_id, args.host, args.externalPort,
-                                               internal_port)
+                                             internal_port)
     elif args.action.lower() == 'remove-link':
         servicelink.remove_load_balancer_target(
             service_id, args.host, args.externalPort)
 
     elif args.action.lower() == 'create-stack':
         stack.create(args.stackName, args.dockerCompose,
-                       args.rancherCompose, args.stackTags)
+                     args.rancherCompose, args.stackTags)
 
     elif args.action.lower() == 'remove-stack':
         stack.remove('name', args.stackName)

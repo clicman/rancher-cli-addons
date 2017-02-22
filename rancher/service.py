@@ -5,7 +5,7 @@ from time import sleep, time
 from . import stack, shutdown, api, http_util, config
 
 def __get_service_id(stack_id, name, no_error=False):
-    end_point = '{}/{}/services'.format(api.V1, stack_id)
+    end_point = '{}/environments/{}/services'.format(api.V1, stack_id)
     response = http_util.get(end_point)
     if response.status_code not in range(200, 300):
         shutdown.err(response.text)
