@@ -1,0 +1,10 @@
+"""Rancher client configuration. Initialized in racnher-cli.py"""
+
+RANCHER_BASE_URL = ""
+RANCHER_API_ACCESS_KEY = ""
+RANCHER_API_SECRET_KEY = ""
+RANCHER_PROJECT_ID = ""
+LOAD_BALANCER_SVC_ID = ""
+STACK_UPGRADE_TIMEOUT = ""
+STACK_ACTIVE_TIMEOUT = ""
+STACK_HEALTHY_TIMEOUT = ""

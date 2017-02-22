@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import yaml
 import argparse
+import yaml
 
 parser = argparse.ArgumentParser(description='Yaml values modifier')
 parser.add_argument('file', help='Path to file')
@@ -18,8 +18,8 @@ def parse(yml_file):
     with open(yml_file, 'r') as data:
         try:
             return yaml.load(data)
-        except yaml.YAMLError as exc:
-            print(exc)
+        except yaml.YAMLError as ex:
+            print ex
             exit(2)
 
 
