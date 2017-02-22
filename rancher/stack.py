@@ -2,13 +2,13 @@
 
 import json
 from time import sleep, time
-from rancher import shutdown, http_util, API, config
+from . import shutdown, http_util, api, config
 
 
 def get_stack_id(name, no_error=False):
     """Get stack id"""
 
-    end_point = '{}/environments?limit=-1'.format(API.V1)
+    end_point = '{}/environments?limit=-1'.format(api.V1)
     response = http_util.get(end_point)
 
     if response.status_code not in range(200, 300):
@@ -36,7 +36,7 @@ def remove(value_type, value):
         shutdown.err('Type must me one of name or id')
 
     end_point = '{}/environments/{}/?action=remove'.format(
-        API.V1, stack_id)
+        api.V1, stack_id)
     response = http_util.post(end_point, {})
     if response.status_code not in range(200, 300):
         shutdown.err('Could not remove stack: {}'.format(response.text))
@@ -57,7 +57,7 @@ def create(name, docker_compose_path, rancher_compose_path, stack_tags=None):
         'dockerCompose': docker_compose,
         'rancherCompose': rancher_compose}
     end_point = '{}/projects/{}/stack'.format(
-        API.V2_BETA, config.RANCHER_PROJECT_ID)
+        api.V2_BETA, config.RANCHER_PROJECT_ID)
     response = http_util.post(end_point, payload)
     if response.status_code not in range(200, 300):
         if json.loads(response.text)['code'] == 'NotUnique':
@@ -82,7 +82,7 @@ def __init_upgrade(name, docker_compose_path, rancher_compose_path):
                'dockerCompose': docker_compose,
                'rancherCompose': rancher_compose}
     end_point = '{}/environments/{}/?action=upgrade'.format(
-        API.V1, get_stack_id(name))
+        api.V1, get_stack_id(name))
     response = http_util.post(end_point, payload)
     if response.status_code not in range(200, 300):
         shutdown.err(response.text)
@@ -91,7 +91,7 @@ def __init_upgrade(name, docker_compose_path, rancher_compose_path):
 
 def __finish_upgrade(stack_id):
     end_point = '{}/environments/{}/?action=finishupgrade'.format(
-        API.V1, stack_id)
+        api.V1, stack_id)
     response = http_util.post(end_point, {})
     if response.status_code not in range(200, 300):
         shutdown.err(response.text)
@@ -145,7 +145,7 @@ def __wait_for_healthy(stack_id):
 
 
 def __get(stack_id):
-    end_point = '{}/environments/{}'.format(API.V1, stack_id)
+    end_point = '{}/environments/{}'.format(api.V1, stack_id)
     response = http_util.get(end_point)
     if response.status_code not in range(200, 300):
         shutdown.err(response.text)
