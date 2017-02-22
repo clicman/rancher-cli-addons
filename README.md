@@ -36,17 +36,14 @@ Examples:
 ```
 
 ####Add load balancer target, so service will be available via http
-* ```${HTTP_SERVICE_NAME}``` - is a service name from docker-compose.yml
-* ```${STACK_NAME}``` - stack name
-* ```${MY_DOMAIN}``` - domain where it will registered
-* **NOTE!** host must always be built as ```${SERVICE_NAME}.${STACK_NAME}.${MY_DOMAIN}```!!!
+
 ```bash
 export SVC_ID_1=`./rancher-cli.py --action=get-svc-id --host=service.stack-name`
 export SVC_ID_2=`./rancher-cli.py --action=get-svc-id --host=service.stack-name`
 export SVC_ID_3=`./rancher-cli.py --action=get-svc-id --host=service.stack-name`
 
 #HTTP example
-./rancher-cli.py  --action=update-lb  --loadBalancerId=${RANCHER_LB_ID} --data="{\"lbConfig\":{\"portRules\":[{\"protocol\":\"http\",\"type\":\"portRule\",\"priority\":1,\"hostname\":\"some.domain.name\",\"sourcePort\":80,\"targetPort\":5099,\"serviceId\":\"${SVC_ID}\"},{\"protocol\":\"http\",\"type\":\"portRule\",\"priority\":1,\"hostname\":\"some.domain.name2\",\"sourcePort\":80,\"targetPort\":3000,\"serviceId\":\"${SVC_ID_2}\"}]}}"
+./rancher-cli.py  --action=update-lb  --loadBalancerId=${RANCHER_LB_ID} --data="{\"lbConfig\":{\"portRules\":[{\"protocol\":\"http\",\"type\":\"portRule\",\"priority\":1,\"hostname\":\"some.domain.name\",\"sourcePort\":80,\"targetPort\":5099,\"serviceId\":\"${SVC_ID_1}\"},{\"protocol\":\"http\",\"type\":\"portRule\",\"priority\":1,\"hostname\":\"some.domain.name2\",\"sourcePort\":80,\"targetPort\":3000,\"serviceId\":\"${SVC_ID_2}\"}]}}"
 
 #TCP example
 ./rancher-cli.py  --action=update-lb --loadBalancerId=${RANCHER_LB_TCP_ID} --data="{\"lbConfig\":{\"portRules\":[{\"protocol\":\"tcp\",\"type\":\"portRule\",\"priority\":1,\"sourcePort\":5432,\"targetPort\":5432,\"serviceId\":\"${SVC_ID_3}\"}]},\"launchConfig\":{\"ports\":[\"5432:5432/tcp\"]}}"
