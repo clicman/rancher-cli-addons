@@ -18,7 +18,7 @@ _HEADERS = {'Content-Type': 'application/json', 'Accept': 'application/json'}
 
 def _send_request(method, url, json_data=None):
     """Send HTTP request"""
-    return _HTTP[method]('{}/{}/'.format(config.RANCHER_BASE_URL, url),
+    return _HTTP[method]('{}/{}'.format(config.RANCHER_BASE_URL, url),
                          auth=(config.RANCHER_API_ACCESS_KEY, config.RANCHER_API_SECRET_KEY),
                          headers=_HEADERS, json=json_data, verify=False)
 
